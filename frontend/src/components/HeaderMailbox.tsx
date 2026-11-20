@@ -206,21 +206,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
     setCustomAddressSuccess(null);
   };
   
-  // 移动设备上的邮箱地址显示
-  const renderMobileAddress = () => {
-    const [username, domainPart] = fullAddress.split('@');
-
-    // 如果用户名太长，截断显示
-    const displayUsername = username.length > 10 ? `${username.substring(0, 8)}...` : username;
-
-    return (
-      <code className="bg-white/10 text-slate-100 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[140px] border border-white/10">
-        {domainPart ? `${displayUsername}@${domainPart}` : displayUsername}
-      </code>
-    );
-  };
-  
-  // 按钮基础样式
+  // 按钮基础样式（图标按钮统一 40px 点击区）
   const buttonBaseClass = "flex items-center justify-center transition-all duration-200";
   const copyButtonClass = `${buttonBaseClass} glass-chip hover:scale-105 mx-1`;
   const refreshButtonClass = `${buttonBaseClass} glass-chip hover:scale-105 mr-1`;
@@ -229,9 +215,9 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   return (
     <div className="flex items-center">
       {isCustomMode ? (
-        <form onSubmit={handleCreateCustom} className="flex flex-col space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center">
+        <form onSubmit={handleCreateCustom} className="flex flex-col space-y-2 w-full">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center flex-1 min-w-[180px]">
               <input
                 type="text"
                 value={customAddress}
@@ -240,7 +226,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                   if (customAddressError) setCustomAddressError(null);
                   if (customAddressSuccess) setCustomAddressSuccess(null);
                 }}
-                className={`glass-input w-32 md:w-40 px-2 py-1 text-sm rounded-l-xl focus:outline-none focus:ring-1 focus:ring-primary ${
+                className={`glass-input flex-1 min-w-0 px-3 py-2 text-sm rounded-l-xl focus:outline-none focus:ring-1 focus:ring-primary ${
                   customAddressError ? 'border-red-500' : ''
                 }`}
                 placeholder={t('mailbox.customAddressPlaceholder')}
@@ -248,7 +234,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                 autoFocus
               />
               {domain !== '' && (
-                <span className="px-2 py-1 text-sm text-slate-300 border-y border-r border-white/10 rounded-r-xl bg-white/5">
+                <span className="px-2 py-2 text-sm text-slate-300 border-y border-r border-white/10 rounded-r-xl bg-white/5 whitespace-nowrap">
                   @{domain}
                 </span>
               )}
@@ -256,14 +242,14 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
             <button
               type="button"
               onClick={handleCancelCustom}
-              className="px-3 py-1 text-sm rounded-full glass-btn transition-colors"
+              className="px-3 py-2 min-h-[36px] text-sm rounded-full glass-btn transition-colors"
               disabled={isActionLoading}
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
-              className="px-3 py-1 text-sm rounded-full btn-gradient transition-colors"
+              className="px-3 py-2 min-h-[36px] text-sm rounded-full btn-gradient transition-colors"
               disabled={isActionLoading}
             >
               {isActionLoading ? t('common.loading') : t('common.create')}
@@ -290,14 +276,14 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
           <div className="hidden md:flex items-center flex-col">
             {/* 邮箱地址和操作按钮 */}
             <div className="flex items-center">
-              <code className="px-3 py-1.5 text-sm font-medium text-slate-100 break-all">
+              <code className="px-3 py-1.5 text-[15px] font-semibold text-slate-50 break-all">
                 {fullAddress}
               </code>
               
               <div className="relative">
                 <button
                   onClick={copyToClipboard}
-                  className={`w-9 h-9 rounded-full ${copyButtonClass}`}
+                  className={`w-10 h-10 rounded-full ${copyButtonClass}`}
                   aria-label={t('common.copy')}
                   title={t('common.copy')}
                 >
@@ -306,7 +292,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                 
                 {/* 复制成功提示 */}
                 {showCopyTooltip && (
-                  <div className="absolute top-9 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
+                  <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
                     {t('mailbox.copySuccess')}
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
                   </div>
@@ -316,7 +302,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
               <div className="relative">
                 <button
                   onClick={handleRefreshMailbox}
-                  className={`w-9 h-9 rounded-full ${refreshButtonClass}`}
+                  className={`w-10 h-10 rounded-full ${refreshButtonClass}`}
                   disabled={isActionLoading}
                   title={t('mailbox.refresh')}
                 >
@@ -325,7 +311,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                 
                 {/* 更新成功提示 */}
                 {showRefreshSuccess && (
-                  <div className="absolute top-9 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
+                  <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
                     {t('mailbox.refreshSuccess')}
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
                   </div>
@@ -334,7 +320,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
               
               <button
                 onClick={() => setIsCustomMode(true)}
-                className={`w-9 h-9 rounded-full ${customizeButtonClass}`}
+                className={`w-10 h-10 rounded-full ${customizeButtonClass}`}
                 disabled={isActionLoading}
                 title={t('mailbox.customize')}
               >
@@ -350,63 +336,64 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
             )}
           </div>
           
-          {/* 移动版显示 */}
-          <div className="flex md:hidden items-center flex-col">
-            {/* 邮箱地址和操作按钮 */}
-            <div className="flex items-center">
-              {renderMobileAddress()}
-              
+          {/* 移动版显示：地址独占一行完整显示（自动换行不截断），按钮另起一行 */}
+          <div className="flex md:hidden flex-col items-stretch gap-2.5 w-full">
+            <code className="w-full break-all bg-white/10 text-slate-50 px-3 py-2.5 rounded-xl text-sm font-semibold border border-white/10">
+              {fullAddress}
+            </code>
+
+            <div className="flex items-center gap-1">
               <div className="relative">
                 <button
                   onClick={copyToClipboard}
-                  className={`w-8 h-8 rounded-full ${copyButtonClass}`}
+                  className={`w-10 h-10 rounded-full ${copyButtonClass}`}
                   aria-label={t('common.copy')}
                   title={t('common.copy')}
                 >
-                  <i className="fas fa-copy text-xs"></i>
+                  <i className="fas fa-copy text-sm"></i>
                 </button>
-                
+
                 {/* 复制成功提示 */}
                 {showCopyTooltip && (
-                  <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
+                  <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
                     {t('mailbox.copySuccess')}
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
                   </div>
                 )}
               </div>
-              
+
               <div className="relative">
                 <button
                   onClick={handleRefreshMailbox}
-                  className={`w-8 h-8 rounded-full ${refreshButtonClass}`}
+                  className={`w-10 h-10 rounded-full ${refreshButtonClass}`}
                   disabled={isActionLoading}
                   title={t('mailbox.refresh')}
                 >
-                  <i className="fas fa-sync-alt text-xs"></i>
+                  <i className="fas fa-sync-alt text-sm"></i>
                 </button>
-                
+
                 {/* 更新成功提示 */}
                 {showRefreshSuccess && (
-                  <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
+                  <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-slate-800/95 text-slate-100 border border-white/10 text-xs py-1 px-2 rounded-lg shadow-xl whitespace-nowrap z-10">
                     {t('mailbox.refreshSuccess')}
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
                   </div>
                 )}
               </div>
-              
+
               <button
                 onClick={() => setIsCustomMode(true)}
-                className={`w-8 h-8 rounded-full ${customizeButtonClass}`}
+                className={`w-10 h-10 rounded-full ${customizeButtonClass}`}
                 disabled={isActionLoading}
                 title={t('mailbox.customize')}
               >
-                <i className="fas fa-edit text-xs"></i>
+                <i className="fas fa-edit text-sm"></i>
               </button>
             </div>
-            
+
             {/* 错误信息显示 */}
             {(copyError || refreshError) && (
-              <div className="text-red-300 text-xs mt-1">
+              <div className="text-red-300 text-xs px-1">
                 {copyError || refreshError}
               </div>
             )}

@@ -43,7 +43,7 @@ const Layout: React.FC<{ onLogout?: () => void; onPasswordChanged?: () => void }
         onLogout={onLogout}
         onPasswordChanged={onPasswordChanged}
       />
-      <main className="flex-1 py-5 md:py-7">
+      <main className="flex-1 pt-5 pb-12 md:pt-6 md:pb-16">
         <Outlet />
       </main>
     </div>

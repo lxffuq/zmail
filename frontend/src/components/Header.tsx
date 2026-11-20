@@ -29,11 +29,11 @@ const Header: React.FC<HeaderProps> = ({
       <Container>
         <div className="glass-header rounded-2xl px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2.5 min-w-0">
-            <span className="btn-gradient flex-none w-9 h-9 rounded-xl flex items-center justify-center">
+            <span className="btn-gradient flex-none w-10 h-10 rounded-xl flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
             </span>
             <span className="min-w-0">
-              <span className="block text-lg font-bold leading-tight truncate text-slate-50">
+              <span className="block text-base sm:text-lg font-bold leading-tight truncate text-slate-50">
                 {t('app.title')}
               </span>
             </span>
@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => setShowChangePassword(true)}
-              className="glass-chip px-3 py-1.5 text-sm rounded-full"
+              className="glass-chip px-2.5 sm:px-3 py-2 min-h-[36px] text-sm rounded-full"
               title="修改密码"
             >
               修改密码
@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onLogout}
-              className="btn-danger-glass px-3 py-1.5 text-sm rounded-full"
+              className="btn-danger-glass px-2.5 sm:px-3 py-2 min-h-[36px] text-sm rounded-full"
               title="退出登录"
             >
               退出
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({
               href="https://github.com/lxffuq/zmail"
               target="_blank"
               rel="noopener noreferrer"
-              className="glass-chip w-9 h-9 hidden sm:flex items-center justify-center rounded-full"
+              className="glass-chip w-10 h-10 hidden sm:flex items-center justify-center rounded-full"
               aria-label="GitHub"
               title="GitHub"
             >

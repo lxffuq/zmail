@@ -21,7 +21,7 @@ const LanguageSwitcher: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="glass-chip w-9 h-9 flex items-center justify-center rounded-full"
+        className="glass-chip w-10 h-10 flex items-center justify-center rounded-full"
         aria-label={t('settings.language')}
         title={t('settings.language')}
       >

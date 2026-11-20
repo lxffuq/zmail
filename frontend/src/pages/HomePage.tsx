@@ -86,21 +86,22 @@ const HomePage: React.FC = () => {
       <StructuredData />
 
       {/* 大标题 + 副标题（参考图仪表盘标题区） */}
-      <div className="mt-2 mb-5">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-50">
+      <div className="mt-1 sm:mt-2 mb-5 sm:mb-6 animate-fade-up">
+        <h1 className="text-[1.9rem] leading-[1.15] sm:text-4xl font-extrabold tracking-tight text-slate-50">
           {t('app.title')}
         </h1>
-        <p className="mt-2 text-sm sm:text-base text-slate-400">
+        <p className="mt-2.5 text-sm sm:text-[15px] leading-relaxed text-slate-400">
           {t('app.subtitle')}
         </p>
       </div>
 
+      <div className="space-y-5 sm:space-y-6">
       {/* 邮箱地址玻璃卡片 */}
       {mailbox ? (
-        <section className="glass rounded-3xl p-5 sm:p-6 mb-5">
-          <h2 className="section-title text-lg mb-4">{t('mailbox.address')}</h2>
+        <section className="glass rounded-3xl p-5 sm:p-6 animate-fade-up" style={{ animationDelay: '60ms' }}>
+          <h2 className="section-title text-base sm:text-lg mb-4">{t('mailbox.address')}</h2>
 
-          <div className="glass-soft rounded-2xl px-4 py-3 mb-4 overflow-hidden">
+          <div className="glass-soft rounded-2xl px-4 py-3.5 sm:px-5 sm:py-4 mb-5 overflow-hidden">
             <HeaderMailbox
               mailbox={mailbox}
               onMailboxChange={setMailbox}
@@ -111,31 +112,32 @@ const HomePage: React.FC = () => {
 
           {/* 创建时间 / 过期时间 / 剩余时间 / 邮件数 */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            <div className="glass-soft rounded-2xl px-4 py-3">
-              <p className="text-xs text-slate-400 mb-1">{t('mailbox.created')}</p>
-              <p className="text-slate-100 leading-snug">{formatDate(mailbox.createdAt)}</p>
+            <div className="glass-soft rounded-2xl px-4 py-3.5">
+              <p className="text-xs text-slate-400 mb-1.5">{t('mailbox.created')}</p>
+              <p className="text-[15px] font-semibold text-slate-50 leading-snug">{formatDate(mailbox.createdAt)}</p>
             </div>
-            <div className="glass-soft rounded-2xl px-4 py-3">
-              <p className="text-xs text-slate-400 mb-1">{t('mailbox.expiresAt')}</p>
-              <p className="text-slate-100 leading-snug">{formatDate(mailbox.expiresAt)}</p>
+            <div className="glass-soft rounded-2xl px-4 py-3.5">
+              <p className="text-xs text-slate-400 mb-1.5">{t('mailbox.expiresAt')}</p>
+              <p className="text-[15px] font-semibold text-slate-50 leading-snug">{formatDate(mailbox.expiresAt)}</p>
             </div>
-            <div className="glass-soft rounded-2xl px-4 py-3">
-              <p className="text-xs text-slate-400 mb-1">{t('mailbox.timeLeft')}</p>
-              <p className="text-slate-100 leading-snug">{calculateTimeLeft(mailbox.expiresAt)}</p>
+            <div className="glass-soft rounded-2xl px-4 py-3.5">
+              <p className="text-xs text-slate-400 mb-1.5">{t('mailbox.timeLeft')}</p>
+              <p className="text-[15px] font-semibold text-indigo-300 leading-snug">{calculateTimeLeft(mailbox.expiresAt)}</p>
             </div>
-            <div className="glass-soft rounded-2xl px-4 py-3">
-              <p className="text-xs text-slate-400 mb-1">{t('email.inbox')}</p>
-              <p className="text-slate-100 leading-snug">
-                {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
+            <div className="glass-soft rounded-2xl px-4 py-3.5">
+              <p className="text-xs text-slate-400 mb-1.5">{t('email.inbox')}</p>
+              <p className="leading-snug">
+                <span className="text-xl font-bold text-slate-50">{emails.length}</span>{' '}
+                <span className="text-sm text-slate-400">{emails.length === 1 ? t('email.message') : t('email.messages')}</span>
               </p>
             </div>
           </div>
 
           {/* 自动刷新 / 删除邮箱 */}
-          <div className="flex flex-wrap items-center gap-2 mt-4">
+          <div className="flex flex-wrap items-center gap-2.5 mt-5">
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`px-4 py-2 rounded-full text-sm transition-all ${
+              className={`px-4 py-2 min-h-[40px] rounded-full text-sm transition-all ${
                 autoRefresh ? 'btn-gradient' : 'glass-btn'
               }`}
             >
@@ -145,13 +147,13 @@ const HomePage: React.FC = () => {
               <>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="glass-btn px-4 py-2 rounded-full text-sm"
+                  className="glass-btn px-4 py-2 min-h-[40px] rounded-full text-sm"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => { setShowDeleteConfirm(false); deleteMailbox(); }}
-                  className="btn-danger-glass px-4 py-2 rounded-full text-sm"
+                  className="btn-danger-glass px-4 py-2 min-h-[40px] rounded-full text-sm"
                 >
                   {t('common.confirm')}
                 </button>
@@ -159,7 +161,7 @@ const HomePage: React.FC = () => {
             ) : (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="btn-danger-glass px-4 py-2 rounded-full text-sm"
+                className="btn-danger-glass px-4 py-2 min-h-[40px] rounded-full text-sm"
               >
                 {t('common.delete')}
               </button>
@@ -167,18 +169,21 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       ) : (
-        <section className="mb-5">
+        <section className="animate-fade-up" style={{ animationDelay: '60ms' }}>
           <CreateMailboxForm onMailboxCreated={() => window.location.reload()} />
         </section>
       )}
 
       {/* 收件箱：独立玻璃卡片 */}
-      <EmailList
-        emails={emails}
-        selectedEmailId={selectedEmail}
-        onSelectEmail={setSelectedEmail}
-        isLoading={isEmailsLoading}
-      />
+      <div className="animate-fade-up" style={{ animationDelay: '120ms' }}>
+        <EmailList
+          emails={emails}
+          selectedEmailId={selectedEmail}
+          onSelectEmail={setSelectedEmail}
+          isLoading={isEmailsLoading}
+        />
+      </div>
+      </div>
     </Container>
   );
 };

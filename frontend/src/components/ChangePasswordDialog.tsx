@@ -61,16 +61,16 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
       onClick={resetAndClose}
     >
       <div
-        className="glass rounded-3xl p-6 w-full max-w-sm"
+        className="glass rounded-3xl p-6 w-full max-w-sm animate-dialog-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="section-title text-lg mb-4">修改密码</h2>
+        <h2 className="section-title text-lg mb-5">修改密码</h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <input
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
-            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="旧密码"
             disabled={isLoading}
             autoFocus
@@ -80,7 +80,7 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="新密码（至少 6 位）"
             disabled={isLoading}
             autoComplete="new-password"
@@ -89,7 +89,7 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="再次输入新密码"
             disabled={isLoading}
             autoComplete="new-password"
@@ -101,14 +101,14 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
             <button
               type="button"
               onClick={resetAndClose}
-              className="glass-btn flex-1 px-4 py-2.5 rounded-full hover:opacity-90"
+              className="glass-btn flex-1 px-4 py-3 min-h-[44px] rounded-full hover:opacity-90"
               disabled={isLoading}
             >
               取消
             </button>
             <button
               type="submit"
-              className="btn-gradient flex-1 px-4 py-2.5 rounded-full"
+              className="btn-gradient flex-1 px-4 py-3 min-h-[44px] rounded-full"
               disabled={isLoading}
             >
               {isLoading ? '请稍候…' : '确认修改'}
