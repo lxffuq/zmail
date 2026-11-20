@@ -79,7 +79,7 @@ cd zmail
 
 脚本会问登录和收信域名，剩下的全自动。**完整的傻瓜式教程、手动部署步骤和常见问题见 [DEPLOY.md](./DEPLOY.md)。**
 
-> 注意：Deploy to Cloudflare 按钮只支持公开仓库。如果你的账号里已经有一个同名 `tempmail` 数据库，部署会失败，去控制台复制它的 database_id 填进 `wrangler.toml` 再部署（详见 DEPLOY.md）。
+> 注意：Deploy to Cloudflare 按钮只支持公开仓库。部署时 D1 数据库按名字自动处理：账号里已有同名 `tempmail` 库就直接复用，没有就新建，不用手动建库、不用改配置（详见 DEPLOY.md）。用 API Token 在本地跑 `wrangler deploy` 的话，Token 里要有 D1 权限，否则部署会在确认数据库那步报 `Authentication error [code: 10000]`。
 
 ---
 

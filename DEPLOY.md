@@ -76,8 +76,11 @@ cd zmail
 **Q：点按钮后提示仓库必须是公开的？**
 A：Deploy to Cloudflare 按钮只支持公开仓库。确认仓库是 public 再点。
 
-**Q：部署失败，提示 D1 数据库名字已被占用？**
-A：你的账号里已经有一个同名 `tempmail` 数据库。去控制台 Workers & Pages → D1，点开它复制 database_id，填进 `wrangler.toml` 的 `[[d1_databases]]` 里再部署；或者把数据库改名。
+**Q：账号里已经有一个同名 `tempmail` 数据库，部署会冲突吗？**
+A：不会。`wrangler.toml` 里不写数据库 ID，部署时 Wrangler 4 会按名字自动处理：已有同名库就直接复用，没有就新建一个。不用手动建库、不用改配置。
+
+**Q：部署时报 D1 `Authentication error [code: 10000]`？**
+A：部署用的 API Token 没有 D1 权限。Wrangler 4 在部署时要调 D1 接口确认/创建数据库，Token 里必须有 D1 权限。解决办法（二选一）：① 去控制台新建一个自定义 Token，加上 Account → D1 → Edit（同时保留 Workers 相关权限），用新 Token 部署；② 直接点 Deploy to Cloudflare 按钮部署——按钮走的是浏览器里的 Cloudflare 登录（完整账号权限），不受 API Token 限制。
 
 **Q：部署失败，提示找不到 frontend/dist？**
 A：前端没构建出来。确认构建步骤跑过：本地跑 `npm run build`，看有没有报错；一键部署则检查 Cloudflare 构建日志里前端构建那一步。

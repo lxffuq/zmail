@@ -19,15 +19,14 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRONTEND_DIR="$REPO_DIR/frontend"
 DB_NAME="tempmail"
 WORKER_NAME="zmail"
-WRANGLER="npx -y wrangler"
+WRANGLER="npx -y wrangler@4"
 
 say() { printf '\n==> %s\n' "$*"; }
 die() { printf '\n✖ %s\n' "$*" >&2; exit 1; }
 
 # --- 0. 环境检查 ------------------------------------------------------------
-command -v node    >/dev/null 2>&1 || die "没找到 Node.js，请先安装 Node.js 18+（https://nodejs.org），再重新运行。"
-command -v npx     >/dev/null 2>&1 || die "没找到 npx，请确认 Node.js 安装完整。"
-command -v python3 >/dev/null 2>&1 || die "没找到 python3，脚本用它来读写 wrangler.toml。"
+command -v node >/dev/null 2>&1 || die "没找到 Node.js，请先安装 Node.js 18+（https://nodejs.org），再重新运行。"
+command -v npx  >/dev/null 2>&1 || die "没找到 npx，请确认 Node.js 安装完整。"
 
 # --- 1. 登录 Cloudflare -----------------------------------------------------
 say "检查 Cloudflare 登录状态…"
@@ -45,37 +44,12 @@ if [ "$EMAIL_DOMAIN" = "example.com" ]; then
   say "未填写域名，先部署演示站；拿到域名后在控制台 Worker → 设置 → 变量里添加 EMAIL_DOMAIN 即可，无需重新构建。"
 fi
 
-# --- 3. D1 数据库：已有则复用 ID，没有则部署时自动创建 ----------------------
-say "准备 D1 数据库（$DB_NAME）…"
+# --- 3. D1 数据库：部署时自动处理 -------------------------------------------
+# wrangler.toml 里不写数据库 ID；部署时 Wrangler 4 会按名字自动处理：
+# 账号里已有同名库（tempmail）就直接复用，没有就新建一个。
+# 不用手动建库，也不用往 wrangler.toml 里填 ID。
+say "D1 数据库（$DB_NAME）由部署时自动处理（已有同名库则复用，没有则新建）…"
 cd "$REPO_DIR"
-
-DB_ID="$($WRANGLER d1 list --json 2>/dev/null | python3 -c "
-import json, sys
-try:
-    data = json.load(sys.stdin)
-    rows = data if isinstance(data, list) else data.get('result', [])
-    print(next((d.get('uuid', '') for d in rows if d.get('name') == '$DB_NAME'), ''))
-except Exception:
-    print('')
-" 2>/dev/null || true)"
-
-if [ -n "$DB_ID" ]; then
-  say "找到已有的 D1 数据库，ID：$DB_ID，写入 wrangler.toml 复用。"
-  python3 - "$DB_ID" <<'PYEOF'
-import re, sys
-p = 'wrangler.toml'
-s = open(p).read()
-db = sys.argv[1]
-if re.search(r'(?m)^database_id\s*=', s):
-    s = re.sub(r'(?m)^database_id\s*=.*$', 'database_id = "%s"' % db, s)
-else:
-    s = re.sub(r'(?m)^(database_name\s*=\s*"tempmail"\s*)$', r'\1\ndatabase_id = "%s"' % db, s, count=1)
-open(p, 'w').write(s)
-print('已把 database_id 写入 wrangler.toml')
-PYEOF
-else
-  say "还没有 $DB_NAME 数据库，部署时由 Wrangler 自动创建（首次部署后请把写回 wrangler.toml 的 database_id 提交到仓库）。"
-fi
 
 # --- 4. 构建前端 ------------------------------------------------------------
 say "安装前端依赖并构建…"
