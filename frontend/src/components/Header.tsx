@@ -29,14 +29,11 @@ const Header: React.FC<HeaderProps> = ({
       <Container>
         <div className="glass-header rounded-2xl px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2.5 min-w-0">
-            <span className="btn-gradient flex-none w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold">
-              Z
+            <span className="btn-gradient flex-none w-9 h-9 rounded-xl flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
             </span>
             <span className="min-w-0">
               <span className="block text-lg font-bold leading-tight truncate text-slate-50">
-                ZMAIL
-              </span>
-              <span className="hidden sm:block text-[11px] leading-tight text-slate-400 truncate">
                 {t('app.title')}
               </span>
             </span>
