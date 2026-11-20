@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
-import HeaderMailbox from './HeaderMailbox';
 import ChangePasswordDialog from './ChangePasswordDialog';
 import Container from './Container';
-import { EMAIL_DOMAIN } from '../config';
 
 interface HeaderProps {
   mailbox: Mailbox | null;
@@ -15,63 +13,64 @@ interface HeaderProps {
   onPasswordChanged?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  mailbox = null, 
-  onMailboxChange = () => {}, 
-  isLoading = false,
+/**
+ * 顶部吸顶玻璃横条（参考图顶部）：圆角毛玻璃条，左边 logo + 标题，
+ * 右边是修改密码 / 退出等玻璃小按钮。邮箱地址不在这里，移到下方仪表盘卡片里。
+ */
+const Header: React.FC<HeaderProps> = ({
   onLogout = () => {},
   onPasswordChanged = () => {},
 }) => {
   const { t } = useTranslation();
   const [showChangePassword, setShowChangePassword] = useState(false);
-  
+
   return (
-    <header className="glass-header">
+    <header className="sticky top-0 z-40 pt-3">
       <Container>
-        <div className="flex items-center justify-between py-3">
-          <Link to="/" className="text-2xl font-bold">
-            {t('app.title')}
+        <div className="glass-header rounded-2xl px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+            <span className="btn-gradient flex-none w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold">
+              Z
+            </span>
+            <span className="min-w-0">
+              <span className="block text-lg font-bold leading-tight truncate text-slate-50">
+                ZMAIL
+              </span>
+              <span className="hidden sm:block text-[11px] leading-tight text-slate-400 truncate">
+                {t('app.title')}
+              </span>
+            </span>
           </Link>
-          
-          {mailbox && (
-            <div className="flex items-center glass-soft rounded-md px-3 py-1.5">
-              <HeaderMailbox 
-                mailbox={mailbox} 
-                onMailboxChange={onMailboxChange}
-                domain={EMAIL_DOMAIN}
-                isLoading={isLoading}
-              />
-              <div className="ml-3 pl-3 border-l border-muted-foreground/20 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => setShowChangePassword(true)}
-                  className="px-2 py-1 text-sm rounded-md transition-colors hover:bg-primary/20 hover:text-primary"
-                  title="修改密码"
-                >
-                  修改密码
-                </button>
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="px-2 py-1 text-sm rounded-md transition-colors hover:bg-primary/20 hover:text-primary"
-                  title="退出登录"
-                >
-                  退出
-                </button>
-                <LanguageSwitcher />
-                <a
-                  href="https://github.com/lxffuq/zmail"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110 ml-1"
-                  aria-label="GitHub"
-                  title="GitHub"
-                >
-                  <i className="fab fa-github text-base"></i>
-                </a>
-              </div>
-            </div>
-          )}
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setShowChangePassword(true)}
+              className="glass-chip px-3 py-1.5 text-sm rounded-full"
+              title="修改密码"
+            >
+              修改密码
+            </button>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="btn-danger-glass px-3 py-1.5 text-sm rounded-full"
+              title="退出登录"
+            >
+              退出
+            </button>
+            <LanguageSwitcher />
+            <a
+              href="https://github.com/lxffuq/zmail"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-chip w-9 h-9 hidden sm:flex items-center justify-center rounded-full"
+              aria-label="GitHub"
+              title="GitHub"
+            >
+              <i className="fab fa-github text-base"></i>
+            </a>
+          </div>
         </div>
       </Container>
       <ChangePasswordDialog
@@ -83,4 +82,4 @@ const Header: React.FC<HeaderProps> = ({
   );
 };
 
-export default Header; 
+export default Header;

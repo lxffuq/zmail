@@ -11,7 +11,7 @@ const NotFoundPage: React.FC = () => {
       <p className="text-xl text-muted-foreground mb-6">{t('errors.notFound')}</p>
       <Link 
         to="/" 
-        className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+        className="btn-gradient px-5 py-2.5 rounded-full"
       >
         {t('common.back')}
       </Link>

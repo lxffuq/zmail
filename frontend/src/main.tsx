@@ -14,6 +14,10 @@ const router = {
   },
 };
 
+// 全站默认深色：给 <html> 加 dark 类，让 tailwind 的 dark: 变体也生效
+//（:root 变量本身也已是深色，双保险）。
+document.documentElement.classList.add('dark');
+
 // 先从后端拉取运行时配置（收信域名等），再渲染首屏；
 // 拉取失败时用构建时默认值，不阻塞页面。
 initRuntimeConfig().finally(() => {

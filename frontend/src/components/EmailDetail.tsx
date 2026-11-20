@@ -92,7 +92,7 @@ const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: stri
         <iframe
           src={objectUrl}
           sandbox=""
-          className="w-full h-[400px] border rounded"
+          className="w-full h-[400px] border border-white/10 rounded-xl bg-black/30"
           title={attachment.filename}
         />
       </div>
@@ -104,7 +104,7 @@ const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: stri
       <img
         src={objectUrl}
         alt={attachment.filename}
-        className="max-w-full max-h-[300px] object-contain rounded border"
+        className="max-w-full max-h-[300px] object-contain rounded-xl border border-white/10"
       />
     </div>
   );
@@ -361,10 +361,10 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const sanitizedHtmlContent = email?.htmlContent ? DOMPurify.sanitize(email.htmlContent) : '';
   
   return (
-    <div className="glass rounded-lg p-6">
+    <div className="glass-soft rounded-2xl p-5">
       {/* 错误和成功提示 */}
       {(errorMessage || successMessage) && (
-        <div className={`p-3 mb-4 rounded-md ${errorMessage ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+        <div className={`p-3 mb-4 rounded-xl border text-sm ${errorMessage ? 'bg-red-500/15 border-red-400/30 text-red-300' : 'bg-green-500/15 border-green-400/30 text-green-300'}`}>
           {errorMessage || successMessage}
         </div>
       )}
@@ -378,7 +378,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
           {/* 邮件头部信息 */}
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-semibold mb-2">
+              <h2 className="text-xl font-semibold mb-2 text-slate-50">
                 {email.subject || t('email.noSubject')}
               </h2>
               <div className="text-sm text-muted-foreground">
@@ -390,14 +390,14 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             <div className="flex space-x-2">
               <button
                 onClick={onClose}
-                className="p-2 rounded-md hover:bg-white/60 dark:hover:bg-white/15"
+                className="glass-chip w-9 h-9 rounded-full flex items-center justify-center"
                 title={t('common.close')}
               >
                 <i className="fas fa-times"></i>
               </button>
               <button
                 onClick={handleDelete}
-                className="p-2 rounded-md hover:bg-red-100 text-red-600"
+                className="btn-danger-glass w-9 h-9 rounded-full flex items-center justify-center"
                 title={t('common.delete')}
               >
                 <i className="fas fa-trash-alt"></i>
@@ -406,18 +406,18 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
           </div>
           
           {/* 分隔线 */}
-          <hr />
+          <hr className="border-white/10" />
           
           {/* 邮件内容 */}
           <div>
-            <h3 className="font-medium mb-2">{t('email.content')}</h3>
+            <h3 className="font-medium mb-2 text-slate-100">{t('email.content')}</h3>
             {email.htmlContent ? (
               <div 
-                className="prose max-w-none glass-soft rounded-md p-4"
+                className="email-html max-w-none glass-soft rounded-xl p-4"
                 dangerouslySetInnerHTML={{ __html: sanitizedHtmlContent }}
               />
             ) : email.textContent ? (
-              <pre className="whitespace-pre-wrap glass-soft rounded-md p-4 font-sans">
+              <pre className="whitespace-pre-wrap glass-soft rounded-xl p-4 font-sans text-slate-200">
                 {email.textContent}
               </pre>
             ) : (
@@ -430,7 +430,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
           {/* 附件 */}
           {email.hasAttachments && (
             <div>
-              <h3 className="font-medium mb-2">
+              <h3 className="font-medium mb-2 text-slate-100">
                 {t('email.attachments')} 
                 {isLoadingAttachments && (
                   <span className="ml-2 inline-block animate-spin h-4 w-4 border-b-2 border-primary rounded-full"></span>
@@ -440,7 +440,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
               {attachments.length > 0 ? (
                 <div className="space-y-3">
                   {attachments.map(attachment => (
-                    <div key={attachment.id} className="glass-soft rounded-md p-3">
+                    <div key={attachment.id} className="glass-soft rounded-xl p-3">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                           <i className={`fas ${getFileIcon(attachment.mimeType)} text-primary text-lg`}></i>
@@ -452,7 +452,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
                         <button
                           type="button"
                           onClick={() => handleDownloadAttachment(attachment)}
-                          className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90"
+                          className="btn-gradient px-4 py-1.5 rounded-full text-sm"
                         >
                           {t('email.download')}
                         </button>

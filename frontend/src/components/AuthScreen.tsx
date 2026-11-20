@@ -52,9 +52,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSuccess }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="glass rounded-2xl p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-2">ZMAIL</h1>
-        <p className="text-sm text-muted-foreground text-center mb-6">
+      <div className="glass rounded-3xl p-8 w-full max-w-sm">
+        <div className="mx-auto mb-5 w-14 h-14 rounded-2xl btn-gradient flex items-center justify-center text-2xl font-bold">Z</div>
+        <h1 className="text-2xl font-bold text-center mb-2 text-slate-50">ZMAIL</h1>
+        <p className="text-sm text-slate-400 text-center mb-6">
           {mode === 'setup' ? '首次使用，请先设置管理密码' : '请输入管理密码继续'}
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
@@ -62,7 +63,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSuccess }) => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="glass-input w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder={mode === 'setup' ? '设置密码（至少 6 位）' : '管理密码'}
             disabled={isLoading}
             autoFocus
@@ -73,18 +74,18 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSuccess }) => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="glass-input w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="再次输入密码"
               disabled={isLoading}
               autoComplete="new-password"
             />
           )}
           {error && (
-            <div className="p-3 rounded-md bg-red-100 text-red-800 text-sm">{error}</div>
+            <div className="p-3 rounded-xl bg-red-500/15 border border-red-400/30 text-red-300 text-sm">{error}</div>
           )}
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+            className="btn-gradient w-full px-4 py-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={isLoading}
           >
             {isLoading ? '请稍候…' : mode === 'setup' ? '设置密码并进入' : '登录'}

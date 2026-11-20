@@ -185,10 +185,10 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
   };
   
   return (
-    <div className="glass rounded-lg p-6">
+    <div className="glass rounded-3xl p-6">
       {/* 错误和成功提示 */}
       {(errorMessage || successMessage) && (
-        <div className={`p-3 mb-4 rounded-md ${errorMessage ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+        <div className={`p-3 mb-4 rounded-xl border text-sm ${errorMessage ? 'bg-red-500/15 border-red-400/30 text-red-300' : 'bg-green-500/15 border-green-400/30 text-green-300'}`}>
           {errorMessage || successMessage}
         </div>
       )}
@@ -196,8 +196,8 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
       <div className="flex mb-6">
         <button
           type="button"
-          className={`flex-1 py-2 px-4 rounded-l-md ${
-            !isCustom ? 'bg-primary text-primary-foreground' : 'glass-btn'
+          className={`flex-1 py-2.5 px-4 rounded-l-full text-sm ${
+            !isCustom ? 'btn-gradient' : 'glass-btn'
           }`}
           onClick={() => setIsCustom(false)}
         >
@@ -205,8 +205,8 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
         </button>
         <button
           type="button"
-          className={`flex-1 py-2 px-4 rounded-r-md ${
-            isCustom ? 'bg-primary text-primary-foreground' : 'glass-btn'
+          className={`flex-1 py-2.5 px-4 rounded-r-full text-sm ${
+            isCustom ? 'btn-gradient' : 'glass-btn'
           }`}
           onClick={() => setIsCustom(true)}
         >
@@ -222,13 +222,13 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
                 type="text"
                 value={customAddress}
                 onChange={(e) => setCustomAddress(e.target.value)}
-                className="glass-input flex-1 px-3 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="glass-input flex-1 px-4 py-2.5 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder={t('mailbox.customAddressPlaceholder')}
                 disabled={isLoading}
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-r-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="btn-gradient px-5 py-2.5 rounded-r-xl focus:outline-none focus:ring-2 focus:ring-primary"
                 disabled={isLoading}
               >
                 {isLoading ? t('common.loading') : t('common.create')}
@@ -240,7 +240,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
         <button
           type="button"
           onClick={handleCreateRandom}
-          className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="btn-gradient w-full px-4 py-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
           disabled={isLoading}
         >
           {isLoading ? t('common.loading') : t('mailbox.createRandom')}

@@ -49,15 +49,15 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
 
   
   return (
-    <div className="glass rounded-lg p-6">
+    <div className="glass rounded-3xl p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
         <div className="flex mt-4 md:mt-0 space-x-2">
           <button
             onClick={onToggleAutoRefresh}
-            className={`px-3 py-1 rounded-md ${
+            className={`px-4 py-2 rounded-full text-sm ${
               autoRefresh 
-                ? 'bg-primary text-primary-foreground' 
-                : 'glass-btn text-muted-foreground'
+                ? 'btn-gradient' 
+                : 'glass-btn'
             }`}
           >
             {autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
@@ -67,13 +67,13 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
             <>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1 rounded-md glass-btn"
+                className="glass-btn px-4 py-2 rounded-full text-sm"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={onDelete}
-                className="px-3 py-1 rounded-md bg-destructive text-destructive-foreground"
+                className="btn-danger-glass px-4 py-2 rounded-full text-sm"
               >
                 {t('common.confirm')}
               </button>
@@ -81,7 +81,7 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
           ) : (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="px-3 py-1 rounded-md bg-destructive text-destructive-foreground"
+              className="btn-danger-glass px-4 py-2 rounded-full text-sm"
             >
               {t('common.delete')}
             </button>
@@ -89,18 +89,18 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div>
-          <p className="text-muted-foreground">{t('mailbox.created')}</p>
-          <p>{formatDate(mailbox.createdAt)}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+        <div className="glass-soft rounded-2xl px-4 py-3">
+          <p className="text-xs text-slate-400 mb-1">{t('mailbox.created')}</p>
+          <p className="text-slate-100">{formatDate(mailbox.createdAt)}</p>
         </div>
-        <div>
-          <p className="text-muted-foreground">{t('mailbox.expiresAt')}</p>
-          <p>{formatDate(mailbox.expiresAt)}</p>
+        <div className="glass-soft rounded-2xl px-4 py-3">
+          <p className="text-xs text-slate-400 mb-1">{t('mailbox.expiresAt')}</p>
+          <p className="text-slate-100">{formatDate(mailbox.expiresAt)}</p>
         </div>
-        <div>
-          <p className="text-muted-foreground">{t('mailbox.timeLeft')}</p>
-          <p>{calculateTimeLeft(mailbox.expiresAt)}</p>
+        <div className="glass-soft rounded-2xl px-4 py-3">
+          <p className="text-xs text-slate-400 mb-1">{t('mailbox.timeLeft')}</p>
+          <p className="text-slate-100">{calculateTimeLeft(mailbox.expiresAt)}</p>
         </div>
       </div>
     </div>

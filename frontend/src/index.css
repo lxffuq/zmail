@@ -1,175 +1,271 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
+/* ---- 深色液态玻璃（参考图：深蓝黑底 + 蓝紫环境光 + 深色毛玻璃）----
+   注意：tailwind 用 darkMode: ["class"]，但此前从未给 <html> 加过 dark 类，
+   所以 .dark 变体从未生效、页面一直是浅色。本次把 :root 本身改成深色变量，
+   main.tsx 里再补 documentElement.classList.add('dark')，两路都保证深色。 */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
- 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
+    color-scheme: dark;
+    --background: 222 47% 4%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 221 83% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 32% 16%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 222 32% 14%;
+    --muted-foreground: 215 20% 68%;
+
+    --accent: 222 32% 16%;
+    --accent-foreground: 210 40% 96%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 32% 18%;
+    --input: 222 32% 20%;
+    --ring: 221 83% 65%;
+
+    --radius: 0.75rem;
   }
- 
+
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 222 47% 4%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 221 83% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 32% 16%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 222 32% 14%;
+    --muted-foreground: 215 20% 68%;
+    --accent: 222 32% 16%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 32% 18%;
+    --input: 222 32% 20%;
+    --ring: 221 83% 65%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply text-foreground;
-    /* 柔和多色渐变背景（浅色、不刺眼），固定不动，玻璃卡片浮在上面 */
-    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 22%, #fce7f3 48%, #fef3c7 72%, #d1fae5 100%);
+    /* 深蓝黑底 + 蓝紫环境光晕（左上蓝、右上紫、下方青），固定不动 */
+    background-color: #05070f;
+    background-image:
+      radial-gradient(720px 420px at 12% -4%, rgba(59, 130, 246, 0.28), transparent 65%),
+      radial-gradient(720px 460px at 88% -6%, rgba(139, 92, 246, 0.24), transparent 65%),
+      radial-gradient(900px 520px at 50% 115%, rgba(34, 211, 238, 0.12), transparent 65%),
+      linear-gradient(180deg, #070b18 0%, #05070f 55%, #04060d 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
-  .dark body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #3b0764 65%, #082f49 100%);
-    background-attachment: fixed;
+  ::selection {
+    background: rgba(99, 102, 241, 0.45);
+    color: #fff;
+  }
+  /* 滚动条也走深色 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
   }
 }
 
-/* ---- 液态玻璃（iOS liquid glass 风格）---- */
-/* 只改视觉：半透明底 + 毛玻璃模糊 + 细白边 + 柔和大阴影 + 顶部高光。
+/* ---- 深色液态玻璃 ---- */
+/* 半透明深色底 + 毛玻璃模糊 + 细亮边框 + 顶部内高光。
    -webkit-backdrop-filter 让手机 Safari 也生效；不用 overflow:hidden，
    避免裁掉组件内的绝对定位提示（如复制成功气泡）。 */
 @layer components {
   .glass {
-    background: rgba(255, 255, 255, 0.6);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(17, 24, 46, 0.55);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     box-shadow:
-      0 8px 32px rgba(31, 38, 135, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  }
-  .dark .glass {
-    background: rgba(15, 23, 42, 0.55);
-    border-color: rgba(255, 255, 255, 0.14);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.35),
+      0 8px 32px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
 
-  /* 更透的玻璃：卡片内的小块、邮件正文、附件条 */
+  /* 更透的玻璃：卡片内的小块、邮件正文、附件条、统计格 */
   .glass-soft {
-    background: rgba(255, 255, 255, 0.45);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    backdrop-filter: blur(16px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  }
-  .dark .glass-soft {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   /* 顶部栏：模糊更强，贴着顶部 */
   .glass-header {
-    background: rgba(255, 255, 255, 0.65);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    backdrop-filter: blur(24px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(10, 15, 32, 0.6);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    backdrop-filter: blur(24px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.13);
     box-shadow:
-      0 4px 24px rgba(31, 38, 135, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  }
-  .dark .glass-header {
-    background: rgba(15, 23, 42, 0.6);
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-    box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
 
-  /* 玻璃输入框：半透明底 + 内阴影，文字仍是深色，对比度够 */
+  /* 玻璃输入框：深色半透明底 + 内阴影，白字 */
   .glass-input {
-    background: rgba(255, 255, 255, 0.65);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.07);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow:
-      inset 0 1px 2px rgba(31, 38, 135, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7);
-    color: hsl(var(--foreground));
+      inset 0 1px 2px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
   }
   .glass-input::placeholder {
     color: hsl(var(--muted-foreground));
   }
-  .dark .glass-input {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
+  .glass-input:focus {
+    border-color: rgba(99, 102, 241, 0.6);
   }
 
-  /* 玻璃次按钮：原来 bg-muted 的按钮用这个；主按钮（bg-primary 白字）
-     保持实色以保证对比度，只加一点顶部高光 */
+  /* 玻璃次按钮：深色半透明小胶囊 */
   .glass-btn {
-    background: rgba(255, 255, 255, 0.55);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow:
-      0 2px 12px rgba(31, 38, 135, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.65);
-    color: hsl(var(--foreground));
-  }
-  .dark .glass-btn {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.14);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 2px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+  }
+  .glass-btn:hover {
+    background: rgba(255, 255, 255, 0.13);
+  }
+
+  /* 小玻璃胶囊按钮：复制 / 刷新 / 新建等小操作 */
+  .glass-chip {
+    background: rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+  .glass-chip:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+
+  /* 主按钮：蓝 → 紫渐变胶囊，带光晕（参考图“保存全部”） */
+  .btn-gradient {
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 48%, #8b5cf6 100%);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow:
+      0 8px 24px rgba(99, 102, 241, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    color: #fff;
+    transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-gradient:hover {
+    filter: brightness(1.12);
+    box-shadow:
+      0 10px 28px rgba(99, 102, 241, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .btn-gradient:active {
+    transform: scale(0.98);
+  }
+  .btn-gradient:disabled {
+    opacity: 0.6;
+    filter: none;
+  }
+
+  /* 危险按钮：红色半透明玻璃胶囊（参考图“重置”） */
+  .btn-danger-glass {
+    background: rgba(239, 68, 68, 0.18);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    color: #fca5a5;
+    transition: background-color 0.2s ease;
+  }
+  .btn-danger-glass:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fecaca;
+  }
+
+  /* 分区标题：前面一条青蓝渐变竖条（参考图“快速开始”“订阅地址”） */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  .section-title::before {
+    content: "";
+    flex: none;
+    width: 4px;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, #22d3ee 0%, #6366f1 55%, #a855f7 100%);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+  }
+
+  /* 步骤编号：蓝紫渐变圆圈（参考图 1/2/3） */
+  .step-num {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(139, 92, 246, 0.35));
+    border: 1px solid rgba(165, 180, 252, 0.4);
+    color: #c7d2fe;
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+
+  /* 邮件正文（经 DOMPurify 净化后的 HTML）：深色底上的可读配色 */
+  .email-html {
+    color: #e2e8f0;
+  }
+  .email-html a {
+    color: #93c5fd;
+  }
+  .email-html img {
+    max-width: 100%;
+    height: auto;
   }
 }

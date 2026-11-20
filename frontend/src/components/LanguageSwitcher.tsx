@@ -21,7 +21,7 @@ const LanguageSwitcher: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-8 h-8 flex items-center justify-center rounded-md transition-all duration-200 hover:bg-primary/20 hover:text-primary hover:scale-110"
+        className="glass-chip w-9 h-9 flex items-center justify-center rounded-full"
         aria-label={t('settings.language')}
         title={t('settings.language')}
       >
@@ -29,7 +29,7 @@ const LanguageSwitcher: React.FC = () => {
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-popover border rounded-md shadow-md z-10">
+        <div className="absolute right-0 mt-2 w-40 glass rounded-xl shadow-xl z-10 overflow-hidden">
           <ul className="py-1">
             {languages.map(lang => (
               <li key={lang.code}>

@@ -57,20 +57,20 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/30"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
       onClick={resetAndClose}
     >
       <div
-        className="glass rounded-2xl p-6 w-full max-w-sm"
+        className="glass rounded-3xl p-6 w-full max-w-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold mb-4">修改密码</h2>
+        <h2 className="section-title text-lg mb-4">修改密码</h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <input
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
-            className="glass-input w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="旧密码"
             disabled={isLoading}
             autoFocus
@@ -80,7 +80,7 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="glass-input w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="新密码（至少 6 位）"
             disabled={isLoading}
             autoComplete="new-password"
@@ -89,26 +89,26 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="glass-input w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            className="glass-input w-full px-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="再次输入新密码"
             disabled={isLoading}
             autoComplete="new-password"
           />
           {error && (
-            <div className="p-3 rounded-md bg-red-100 text-red-800 text-sm">{error}</div>
+            <div className="p-3 rounded-xl bg-red-500/15 border border-red-400/30 text-red-300 text-sm">{error}</div>
           )}
           <div className="flex space-x-2">
             <button
               type="button"
               onClick={resetAndClose}
-              className="glass-btn flex-1 px-4 py-2 rounded-md hover:opacity-90"
+              className="glass-btn flex-1 px-4 py-2.5 rounded-full hover:opacity-90"
               disabled={isLoading}
             >
               取消
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-60"
+              className="btn-gradient flex-1 px-4 py-2.5 rounded-full"
               disabled={isLoading}
             >
               {isLoading ? '请稍候…' : '确认修改'}
