@@ -21,7 +21,8 @@ const EmailList: React.FC<EmailListProps> = ({
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat('zh-CN', {
+      timeZone: 'Asia/Shanghai',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',

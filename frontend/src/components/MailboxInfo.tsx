@@ -19,7 +19,8 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat('zh-CN', {
+      timeZone: 'Asia/Shanghai',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
