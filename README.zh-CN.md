@@ -59,17 +59,17 @@
 
 ## 🚀 快速部署
 
-只需要一个 Cloudflare 账号（免费）、一个域名、一台装了 Node.js 18+ 的电脑，全程约 5 分钟：
+点一下按钮就能部署到你自己的 Cloudflare 账号，不用终端、不用改配置：
 
-```bash
-git clone https://github.com/lxffuq/zmail.git
-cd zmail
-./deploy.sh
-```
+<div align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/lxffuq/zmail" target="_blank">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare" />
+  </a>
+</div>
 
-脚本会自动完成：创建 D1 数据库 → 部署后端 Worker → 构建并部署前端到 Pages。部署完按脚本最后的提示，在 Cloudflare 控制台把 Email Routing 接到 Worker 上就能收信。
+点按钮 → GitHub 授权 → 登录 Cloudflare → 确认部署，几分钟后拿到网站地址。D1 数据库会自动创建，前后端一次部署完成。
 
-> 📖 完整教程（含准备工作、接通收信的每一步点击、常见问题）见 **[DEPLOY.md](./DEPLOY.md)**。
+部署完还差两步（收信要用）：在 Worker 设置 → 变量里添加 `EMAIL_DOMAIN`（你的域名），再把域名的 Email Routing 接到 Worker 上。详细步骤和本地一条命令部署见 **[DEPLOY.md](./DEPLOY.md)**。
 
 ---
 
@@ -97,16 +97,12 @@ yarn dev
 <div style="background-color: #2d2d2d; color: #ffffff; padding: 15px; border-radius: 5px; margin: 15px 0;">
 
 ```bash
-# 进入worker目录
+# 构建前端 + 部署（前后端一次完成）
+npm run build
+npm run deploy
+
+# 只改后端代码时，也可以在 worker 目录部署
 cd worker
-
-# 安装依赖
-yarn install
-
-# 构建预览
-yarn build
-
-# 部署到 cloudflare
 yarn deploy
 ```
 

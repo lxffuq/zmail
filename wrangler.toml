@@ -1,0 +1,31 @@
+name = "zmail"
+main = "worker/src/index.ts"
+minify = true
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# keep_vars = true：部署时保留控制台里手动设置的变量（例如 EMAIL_DOMAIN），
+# 不会被配置文件覆盖或删除。
+keep_vars = true
+
+# 收信域名不在这里写死：在控制台 Worker → 设置 → 变量里添加 EMAIL_DOMAIN，
+# 前端启动时通过 /api/config 读取，改完即生效，无需重新构建。
+# 也可以用 npx wrangler deploy --var EMAIL_DOMAIN:example.com 的方式设置。
+
+# D1 数据库：不填 database_id，部署时自动创建同名数据库（自动预配）。
+# 首次部署后 Wrangler 会把 database_id 写回本文件，提交它，以后部署都复用同一个库。
+[[d1_databases]]
+binding = "DB"
+database_name = "tempmail"
+
+# 每小时清理过期邮箱和邮件
+[triggers]
+crons = ["0 * * * *"]
+
+# 前端静态资源：构建产物在 frontend/dist；单页应用路由 fallback 到 index.html
+[assets]
+directory = "./frontend/dist"
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = false

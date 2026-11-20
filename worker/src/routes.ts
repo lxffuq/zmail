@@ -30,6 +30,15 @@ app.get('/', (c) => {
   return c.json({ status: 'ok', message: '临时邮箱系统API正常运行' });
 });
 
+// 运行时配置：前端启动时读取收信域名等配置。
+// EMAIL_DOMAIN 在控制台 Worker → 设置 → 变量里设置，改完即生效，无需重新构建。
+app.get('/api/config', (c) => {
+  return c.json({
+    success: true,
+    emailDomain: c.env.EMAIL_DOMAIN || '',
+  });
+});
+
 // 发送邮件API，暂时不用
 app.post('/api/send-email', async (c) => {
   try {

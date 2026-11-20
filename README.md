@@ -59,17 +59,17 @@
 
 ## 🚀 Quick Deployment
 
-All you need is a Cloudflare account (free), a domain, and a machine with Node.js 18+. About 5 minutes:
+Deploy to your own Cloudflare account with one click. No terminal, no config edits:
 
-```bash
-git clone https://github.com/lxffuq/zmail.git
-cd zmail
-./deploy.sh
-```
+<div align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/lxffuq/zmail" target="_blank">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare" />
+  </a>
+</div>
 
-The script does everything for you: creates the D1 database, deploys the backend Worker, then builds and deploys the frontend to Pages. When it finishes, follow its final instructions to point Email Routing at the Worker so you can receive mail.
+Click the button → authorize with GitHub → sign in to Cloudflare → confirm the deploy. A few minutes later you get your site URL. The D1 database is created automatically, and the frontend and backend deploy together.
 
-> 📖 Full guide (prerequisites, every Email Routing click, FAQ) in **[DEPLOY.md](./DEPLOY.md)**.
+Two steps remain after deploy (needed to receive mail): add an `EMAIL_DOMAIN` variable (your domain) in the Worker settings, and point your domain's Email Routing at the Worker. Full steps and the local one-command deploy are in **[DEPLOY.md](./DEPLOY.md)**.
 
 ---
 
@@ -97,16 +97,12 @@ yarn dev
 <div style="background-color: #2d2d2d; color: #ffffff; padding: 15px; border-radius: 5px; margin: 15px 0;">
 
 ```bash
-# Navigate to worker directory
+# Build the frontend and deploy everything at once
+npm run build
+npm run deploy
+
+# To deploy from the worker directory only
 cd worker
-
-# Install dependencies
-yarn install
-
-# Build preview
-yarn build
-
-# Deploy to Cloudflare
 yarn deploy
 ```
 

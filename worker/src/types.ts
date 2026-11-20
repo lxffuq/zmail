@@ -3,6 +3,8 @@ import { D1Database } from '@cloudflare/workers-types';
 // 环境变量类型
 export interface Env {
   DB: D1Database;
+  // 收信域名（例如 example.com），在控制台 Worker → 设置 → 变量里设置；不设置时为空
+  EMAIL_DOMAIN?: string;
 }
 
 // 邮箱类型

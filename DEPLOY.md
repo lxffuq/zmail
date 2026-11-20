@@ -1,6 +1,6 @@
 # ZMAIL 傻瓜式部署教程
 
-部署一次，全程约 5 分钟。只需要三样东西：一个 Cloudflare 账号（免费）、一个域名、电脑上装了 Node.js。
+ZMAIL 现在是**一个 Worker**：前端作为静态资源由 Worker 同源提供，一次部署全部完成。部署一次，全程约 5 分钟。
 
 ## 准备工作
 
@@ -8,10 +8,21 @@
 |---|---|
 | Cloudflare 账号 | 免费即可，[注册](https://dash.cloudflare.com/sign-up) |
 | 域名 | 必须已把 NS（域名服务器）改到 Cloudflare；没有域名也可以先部署演示站，收信以后再配 |
-| Node.js 18+ | [官网下载](https://nodejs.org)，装完在终端跑 `node -v` 能看到版本号就行 |
-| Git | 用来拉代码，装完跑 `git --version` 能看到版本号就行 |
+| GitHub 账号 | 一键部署会把仓库复制到你的 GitHub 账号下 |
 
-## 一键部署（推荐）
+## 方式一：一键部署（推荐，不用终端）
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lxffuq/zmail)
+
+1. 点上面按钮 → 用 GitHub 账号授权 → 登录 Cloudflare 账号
+2. 在设置页确认三项（一般不用改）：仓库名、Worker 名 `zmail`、D1 数据库名 `tempmail`
+3. 点部署，等几分钟，拿到网站地址（例如 `https://zmail.<你的子域名>.workers.dev`）
+
+Cloudflare 会自动做这些事：复制仓库、构建前端、创建 D1 数据库 `tempmail`、部署 Worker。
+
+## 方式二：本地一条命令
+
+电脑上装好 Node.js 18+ 和 Git：
 
 ```bash
 git clone https://github.com/lxffuq/zmail.git
@@ -19,101 +30,99 @@ cd zmail
 ./deploy.sh
 ```
 
-脚本会一步步问你，整个过程只需要你做两件事：
+脚本会问你两件事：登录 Cloudflare（第一次自动打开浏览器授权）、输入收信域名。剩下的全自动：复用或创建 D1 数据库、构建前端、一次部署完成。
 
-1. **登录 Cloudflare**：第一次运行时会自动打开浏览器授权，点一下允许就行。
-2. **输入域名**：输入你的收信域名，例如 `example.com`。没有域名直接回车，会先部署一个演示站。
+## 部署后必须做的两步（收信要用，约 3 分钟）
 
-脚本自动帮你做完这些事：
+这两步 Cloudflare 不提供 API，只能在网页上点：
 
-- 创建 D1 数据库 `tempmail`（已存在就直接复用），并把 ID 写进 `wrangler.toml`
-- 部署后端 Worker，拿到 `https://zmail-backend.<你的子域名>.workers.dev`
-- 用这个后端地址自动构建前端，部署到 Cloudflare Pages，拿到 `https://zmail.pages.dev`
+### 1. 设置收信域名
 
-最后脚本会打印出前端和后端的地址。
+控制台 → Workers & Pages → `zmail` → 设置 → 变量，添加变量：
 
-## 最后一步：接通收信（2 分钟，控制台里点几下）
+- 变量名：`EMAIL_DOMAIN`
+- 值：你的域名，例如 `example.com`
 
-这一步 Cloudflare 不提供 API，只能在网页上点，没法写进脚本：
+保存即生效，**无需重新构建**（前端启动时从 `/api/config` 读取）。
+
+> 用 `./deploy.sh` 部署时脚本已经自动帮你设好了，跳过这步也行。
+
+### 2. 接通收信
 
 1. 打开 https://dash.cloudflare.com，点进你的域名（例如 `example.com`）
 2. 左侧菜单找到 **Email → Email Routing**，点 **启用 Email Routing**，按提示完成
 3. 在 **路由规则** 里点 **创建地址**：
    - 自定义地址填 `*`（意思是这个域名的所有地址都能收）
    - 目标选 **发送到 Worker**
-   - Worker 选 `zmail-backend`，保存
+   - Worker 选 `zmail`，保存
 
 ## 验证
 
-1. 打开前端地址（例如 `https://zmail.pages.dev`）
-2. 点「创建随机邮箱」，得到一个 `xxxx@example.com` 的地址
+1. 打开网站地址
+2. 点「创建随机邮箱」，得到一个地址
 3. 从你自己的邮箱给这个地址发一封测试邮件
 4. 回到页面刷新，就能看到这封邮件
 
 ## 重新部署 / 更新
 
-改完代码后，在仓库根目录再跑一次：
+- 一键部署的：往你 GitHub 上复制的那个仓库推代码，Cloudflare 会自动重新部署。
+- 本地脚本的：改完代码后，在仓库根目录再跑一次 `./deploy.sh`。
+- 手动：`npm run build && npm run deploy`（先构建前端，再部署）。
 
-```bash
-./deploy.sh
-```
-
-脚本会复用已有的 D1 数据库和 Pages 项目，只更新代码。
+重新部署会保留控制台里设置的变量（`keep_vars = true`），`EMAIL_DOMAIN` 不会丢。
 
 ## 常见问题
 
-**Q：脚本提示没找到 Node.js？**
-A：去 https://nodejs.org 装 Node.js 18 以上版本，装完重开一个终端再跑。
+**Q：点按钮后提示仓库必须是公开的？**
+A：Deploy to Cloudflare 按钮只支持公开仓库。确认仓库是 public 再点。
 
-**Q：登录 Cloudflare 一直失败？**
-A：手动跑一次 `npx wrangler login`，按提示在浏览器里授权，成功后再跑 `./deploy.sh`。
+**Q：部署失败，提示 D1 数据库名字已被占用？**
+A：你的账号里已经有一个同名 `tempmail` 数据库。去控制台 Workers & Pages → D1，点开它复制 database_id，填进 `wrangler.toml` 的 `[[d1_databases]]` 里再部署；或者把数据库改名。
 
-**Q：提示 D1 数据库已存在？**
-A：脚本会自动复用已有的 `tempmail` 数据库。如果它要你手动贴 database_id，去控制台 Workers & Pages → D1，点开 `tempmail` 复制 ID 粘贴即可。
+**Q：部署失败，提示找不到 frontend/dist？**
+A：前端没构建出来。确认构建步骤跑过：本地跑 `npm run build`，看有没有报错；一键部署则检查 Cloudflare 构建日志里前端构建那一步。
 
-**Q：前端打开是空白，或提示连不上后端？**
-A：前端构建时用的后端地址是脚本部署完自动填的，不用手动改。先确认后端地址能打开（访问 `https://zmail-backend.<你的子域名>.workers.dev` 应返回 JSON）；如果后端正常，重新跑一次 `./deploy.sh` 即可。
+**Q：网站能打开，但创建的邮箱没有域名后缀（只显示一串字符）？**
+A：`EMAIL_DOMAIN` 没设置。按上面「部署后必须做的两步」第 1 步，在 Worker 设置 → 变量里添加，刷新页面即可。
 
 **Q：能创建邮箱，但收不到邮件？**
 A：按这个顺序查：
-1. Email Routing 有没有启用，规则里的 Worker 是不是 `zmail-backend`
-2. 域名是不是 Cloudflare 托管（NS 在 Cloudflare），MX 记录有没有自动加上
-3. 去控制台 Workers → `zmail-backend` → 日志，看有没有收到邮件的记录
+1. Worker 变量 `EMAIL_DOMAIN` 是不是你的域名
+2. Email Routing 有没有启用，规则里的 Worker 是不是 `zmail`
+3. 域名是不是 Cloudflare 托管（NS 在 Cloudflare），MX 记录有没有自动加上
+4. 去控制台 Workers → `zmail` → 日志，看有没有收到邮件的记录
 
-**Q：workers.dev / pages.dev 在国内打不开？**
-A：给前端和 Worker 各绑一个自己的域名：Pages 项目 → 自定义域；Worker → 设置 → 域。绑完后前端要重新构建一次（`VITE_API_BASE_URL` 改成 Worker 的自定义域名）。
+**Q：workers.dev 在国内打不开？**
+A：给 Worker 绑一个自己的域名：控制台 → Workers & Pages → `zmail` → 设置 → 域 → 添加自定义域。绑完直接用新域名打开，不用重新构建。
 
-**Q：我不想用脚本，想手动部署？**
-A：可以，看下面。
+**Q：我想把前后端分开部署（以前的老方式）？**
+A：不推荐。前端构建时留空 `VITE_API_BASE_URL` 就是同源；非要分开，把前端部署到 Pages，构建时传入 `VITE_API_BASE_URL=https://你的 Worker 地址` 即可。
 
 ## 手动部署（备用）
 
 ```bash
-# 1. 后端：创建 D1 并部署 Worker
-cd worker
-npx wrangler d1 create tempmail        # 记下返回的 database_id
-# 把 database_id 填进 wrangler.toml
-npx wrangler deploy                    # 记下 workers.dev 地址
-
-# 2. 前端：填入后端地址和域名，构建并部署
-cd ../frontend
-npm install
-VITE_API_BASE_URL=https://zmail-backend.<你的子域名>.workers.dev \
-VITE_EMAIL_DOMAIN=example.com \
+# 1. 构建前端
 npm run build
-npx wrangler pages deploy dist --project-name zmail --commit-dirty=true
+
+# 2. 部署（自动创建 D1 数据库并上传 Worker + 前端）
+npx wrangler deploy
+
+# 3. 设置收信域名（也可以在控制台设置）
+npx wrangler deploy --var EMAIL_DOMAIN:example.com
 ```
 
-然后同样做上面「接通收信」的三步。
+然后同样做上面「部署后必须做的两步」。
 
 ## 部署结构
 
 ```
-Cloudflare
-├── Pages：zmail            前端（React + Vite）
-├── Workers：zmail-backend  后端 API + 收信入口（Hono）
-├── D1：tempmail            邮箱、邮件、附件存在这里，表结构首次请求时自动创建
-└── Email Routing：*@域名 → zmail-backend
+Cloudflare（一次部署，全部完成）
+└── Workers：zmail
+    ├── 前端静态资源（React + Vite，frontend/dist）
+    ├── 后端 API（Hono，/api/*）
+    ├── D1：tempmail（邮箱、邮件、附件存在这里，表结构首次请求时自动创建）
+    ├── Email Routing：*@域名 → zmail
+    └── 定时任务：每小时清理过期邮箱和邮件
 ```
 
-定时任务每小时清理一次过期邮箱和邮件。
+以前的前后端分离部署（Pages + Workers）已不再使用。

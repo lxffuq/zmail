@@ -49,13 +49,17 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   }, []);
   
   if (!mailbox || isLoading) return null;
-  
+
+  // 完整地址：未设置域名时只显示用户名部分，不拼出残缺的 @
+  const fullAddress = mailbox.address.includes('@')
+    ? mailbox.address
+    : (domain ? `${mailbox.address}@${domain}` : mailbox.address);
+
   // 复制邮箱地址到剪贴板
   const copyToClipboard = () => {
     // 清除之前的错误信息
     setCopyError(null);
     
-    const fullAddress = mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${domain}`;
     navigator.clipboard.writeText(fullAddress)
       .then(() => {
         // 显示复制成功提示
@@ -175,15 +179,14 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   
   // 移动设备上的邮箱地址显示
   const renderMobileAddress = () => {
-    const fullAddress = mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${domain}`;
     const [username, domainPart] = fullAddress.split('@');
-    
+
     // 如果用户名太长，截断显示
     const displayUsername = username.length > 10 ? `${username.substring(0, 8)}...` : username;
-    
+
     return (
       <code className="bg-muted px-2 py-1 rounded text-xs font-medium truncate max-w-[120px]">
-        {displayUsername}@{domainPart}
+        {domainPart ? `${displayUsername}@${domainPart}` : displayUsername}
       </code>
     );
   };
@@ -215,9 +218,11 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                 disabled={isActionLoading}
                 autoFocus
               />
-              <span className="px-2 py-1 text-sm border-y border-r rounded-r-md bg-muted">
-                @{domain}
-              </span>
+              {domain !== '' && (
+                <span className="px-2 py-1 text-sm border-y border-r rounded-r-md bg-muted">
+                  @{domain}
+                </span>
+              )}
             </div>
             <button
               type="button"
@@ -257,7 +262,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
             {/* 邮箱地址和操作按钮 */}
             <div className="flex items-center">
               <code className="px-3 py-1.5 text-sm font-medium">
-                {mailbox.address.includes('@') ? mailbox.address : `${mailbox.address}@${domain}`}
+                {fullAddress}
               </code>
               
               <div className="relative">
