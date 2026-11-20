@@ -19,9 +19,7 @@
     "success": "成功",
     "failed": "失败",
     "unknown": "未知",
-    "empty": "暂无数据",
-    "blog": "博客",
-    "youtube": "油管频道"
+    "empty": "暂无数据"
   },
   "mailbox": {
     "createRandom": "创建随机邮箱",
