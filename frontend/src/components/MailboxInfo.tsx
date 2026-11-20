@@ -49,7 +49,7 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
 
   
   return (
-    <div className="border rounded-lg p-6">
+    <div className="glass rounded-lg p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
         <div className="flex mt-4 md:mt-0 space-x-2">
           <button
@@ -57,7 +57,7 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
             className={`px-3 py-1 rounded-md ${
               autoRefresh 
                 ? 'bg-primary text-primary-foreground' 
-                : 'bg-muted text-muted-foreground'
+                : 'glass-btn text-muted-foreground'
             }`}
           >
             {autoRefresh ? t('email.autoRefreshOn') : t('email.autoRefreshOff')}
@@ -67,7 +67,7 @@ const MailboxInfo: React.FC<MailboxInfoProps> = ({
             <>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1 rounded-md bg-muted"
+                className="px-3 py-1 rounded-md glass-btn"
               >
                 {t('common.cancel')}
               </button>

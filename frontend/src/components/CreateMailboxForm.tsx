@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MAILBOX_TTL_HOURS } from '../config';
-import { saveMailboxToken } from '../utils/api';
+import { apiFetch, saveMailboxToken } from '../utils/api';
 
 // 自定义地址格式：3-32 个字符，仅小写字母、数字、点、下划线、连字符（与后端一致）
 export const CUSTOM_ADDRESS_PATTERN = /^[a-z0-9._-]{3,32}$/;
@@ -41,7 +41,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
       setSuccessMessage(null);
       
       setIsLoading(true);
-      const response = await fetch('/api/mailboxes', {
+      const response = await apiFetch('/api/mailboxes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
     
     try {
       setIsLoading(true);
-      const response = await fetch('/api/mailboxes', {
+      const response = await apiFetch('/api/mailboxes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
   };
   
   return (
-    <div className="border rounded-lg p-6">
+    <div className="glass rounded-lg p-6">
       {/* 错误和成功提示 */}
       {(errorMessage || successMessage) && (
         <div className={`p-3 mb-4 rounded-md ${errorMessage ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
@@ -197,7 +197,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
         <button
           type="button"
           className={`flex-1 py-2 px-4 rounded-l-md ${
-            !isCustom ? 'bg-primary text-primary-foreground' : 'bg-muted'
+            !isCustom ? 'bg-primary text-primary-foreground' : 'glass-btn'
           }`}
           onClick={() => setIsCustom(false)}
         >
@@ -206,7 +206,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
         <button
           type="button"
           className={`flex-1 py-2 px-4 rounded-r-md ${
-            isCustom ? 'bg-primary text-primary-foreground' : 'bg-muted'
+            isCustom ? 'bg-primary text-primary-foreground' : 'glass-btn'
           }`}
           onClick={() => setIsCustom(true)}
         >
@@ -222,7 +222,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
                 type="text"
                 value={customAddress}
                 onChange={(e) => setCustomAddress(e.target.value)}
-                className="flex-1 px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="glass-input flex-1 px-3 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder={t('mailbox.customAddressPlaceholder')}
                 disabled={isLoading}
               />

@@ -70,7 +70,7 @@ const EmailList: React.FC<EmailListProps> = ({
   
   if (isLoading) {
     return (
-      <div className="border rounded-lg p-6">
+      <div className="glass rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
         </div>
@@ -82,13 +82,13 @@ const EmailList: React.FC<EmailListProps> = ({
   }
   
   return (
-    <div className="border rounded-lg">
+    <div className="glass rounded-lg">
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="text-lg font-semibold">{t('email.inbox')}</h2>
         <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}
-            className="p-1 rounded-md hover:bg-muted"
+            className="p-1 rounded-md hover:bg-white/60 dark:hover:bg-white/15"
             title={t('email.refresh')}
           >
             <i className="fas fa-sync-alt text-sm"></i>
@@ -104,7 +104,7 @@ const EmailList: React.FC<EmailListProps> = ({
       </div>
       
       {mailbox && (
-        <div className="px-4 py-2 bg-muted/30 border-b text-xs text-muted-foreground">
+        <div className="px-4 py-2 bg-white/40 dark:bg-white/10 border-b text-xs text-muted-foreground">
           <div className="flex justify-between items-center mb-1">
             <span>{t('mailbox.created')}:</span>
             <span>{formatFullDate(mailbox.createdAt)}</span>
@@ -120,7 +120,7 @@ const EmailList: React.FC<EmailListProps> = ({
         </div>
       )}
       
-      <div className="flex justify-between items-center px-4 py-2 bg-muted/30">
+      <div className="flex justify-between items-center px-4 py-2 bg-white/40 dark:bg-white/10">
         <span className="text-sm text-muted-foreground">
           {emails.length} {emails.length === 1 ? t('email.message') : t('email.messages')}
         </span>
@@ -139,8 +139,8 @@ const EmailList: React.FC<EmailListProps> = ({
           {emails.map((email) => (
             <React.Fragment key={email.id}>
               <li 
-                className={`p-4 cursor-pointer hover:bg-muted/50 ${
-                  selectedEmailId === email.id ? 'bg-muted' : ''
+                className={`p-4 cursor-pointer hover:bg-white/50 dark:hover:bg-white/10 ${
+                  selectedEmailId === email.id ? 'bg-white/70 dark:bg-white/15' : ''
                 } ${!email.isRead ? 'font-semibold' : ''}`}
                 onClick={() => onSelectEmail(selectedEmailId === email.id ? null : email.id)}
               >

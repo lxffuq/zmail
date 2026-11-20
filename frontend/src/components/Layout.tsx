@@ -2,11 +2,10 @@ import React, { useContext } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Header from './Header';
-import Footer from './Footer';
 import SEO from './SEO';
 import { MailboxContext } from '../contexts/MailboxContext';
 
-const Layout: React.FC = () => {
+const Layout: React.FC<{ onLogout?: () => void; onPasswordChanged?: () => void }> = ({ onLogout, onPasswordChanged }) => {
   const { t } = useTranslation();
   const { mailbox, setMailbox, isLoading } = useContext(MailboxContext);
   const location = useLocation();
@@ -41,11 +40,12 @@ const Layout: React.FC = () => {
         mailbox={mailbox} 
         onMailboxChange={setMailbox} 
         isLoading={isLoading}
+        onLogout={onLogout}
+        onPasswordChanged={onPasswordChanged}
       />
       <main className="flex-1 py-6">
         <Outlet />
       </main>
-      <Footer />
     </div>
   );
 };

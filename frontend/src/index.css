@@ -71,6 +71,105 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    /* 柔和多色渐变背景（浅色、不刺眼），固定不动，玻璃卡片浮在上面 */
+    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 22%, #fce7f3 48%, #fef3c7 72%, #d1fae5 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
-} 
+  .dark body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #3b0764 65%, #082f49 100%);
+    background-attachment: fixed;
+  }
+}
+
+/* ---- 液态玻璃（iOS liquid glass 风格）---- */
+/* 只改视觉：半透明底 + 毛玻璃模糊 + 细白边 + 柔和大阴影 + 顶部高光。
+   -webkit-backdrop-filter 让手机 Safari 也生效；不用 overflow:hidden，
+   避免裁掉组件内的绝对定位提示（如复制成功气泡）。 */
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow:
+      0 8px 32px rgba(31, 38, 135, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+  .dark .glass {
+    background: rgba(15, 23, 42, 0.55);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  /* 更透的玻璃：卡片内的小块、邮件正文、附件条 */
+  .glass-soft {
+    background: rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  .dark .glass-soft {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  /* 顶部栏：模糊更强，贴着顶部 */
+  .glass-header {
+    background: rgba(255, 255, 255, 0.65);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow:
+      0 4px 24px rgba(31, 38, 135, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .dark .glass-header {
+    background: rgba(15, 23, 42, 0.6);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* 玻璃输入框：半透明底 + 内阴影，文字仍是深色，对比度够 */
+  .glass-input {
+    background: rgba(255, 255, 255, 0.65);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+      inset 0 1px 2px rgba(31, 38, 135, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    color: hsl(var(--foreground));
+  }
+  .glass-input::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  .dark .glass-input {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  /* 玻璃次按钮：原来 bg-muted 的按钮用这个；主按钮（bg-primary 白字）
+     保持实色以保证对比度，只加一点顶部高光 */
+  .glass-btn {
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 2px 12px rgba(31, 38, 135, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    color: hsl(var(--foreground));
+  }
+  .dark .glass-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}

@@ -108,6 +108,40 @@ export interface SaveAttachmentParams {
   size: number;
 }
 
+// 管理员配置（settings 表）：key 固定为 'admin_password_hash'，value 为密码 hash
+export interface AdminSetting {
+  key: string;
+  value: string;
+}
+
+// 管理员会话（sessions 表）：只存 token 的 SHA-256 hex，不存 token 原文
+export interface AdminSession {
+  tokenHash: string;
+  expiresAt: number;
+}
+
+// 管理员认证请求体
+export interface AuthSetupRequest {
+  password: string;
+  confirmPassword: string;
+}
+
+export interface AuthLoginRequest {
+  password: string;
+}
+
+export interface AuthChangeRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+// 管理员认证状态响应
+export interface AuthStatusResponse {
+  success: boolean;
+  setupRequired: boolean;
+  authenticated: boolean;
+}
+
 // 解析后的邮件类型
 export interface ParsedEmail {
   html?: string;

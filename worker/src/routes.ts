@@ -15,6 +15,21 @@ import {
   getMailboxIdForAttachment
 } from './database';
 import { generateRandomAddress, MAILBOX_TTL_HOURS } from './utils';
+import {
+  hashPassword,
+  verifyPassword,
+  createSession,
+  verifySession,
+  deleteSession,
+  deleteAllSessions,
+  getAdminTokenHeader,
+  getAdminPasswordHash,
+  setAdminPasswordHash,
+  isAdminPasswordSet,
+} from './auth';
+
+// 管理员密码最短长度
+const MIN_ADMIN_PASSWORD_LENGTH = 6;
 
 // 创建 Hono 应用
 const app = new Hono<{ Bindings: Env }>();
@@ -23,7 +38,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.use('/*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'X-Mailbox-Token'],
+  allowHeaders: ['Content-Type', 'X-Mailbox-Token', 'Authorization', 'X-Admin-Token'],
   maxAge: 86400,
 }));
 
@@ -43,6 +58,157 @@ async function checkMailboxToken(c: Context<{ Bindings: Env }>, mailboxId: strin
   }
   return null;
 }
+
+/**
+ * 管理员鉴权中间件：所有 /api/* 请求都要校验会话 token。
+ * 放行：/api/auth/*（全部）和 /api/config。
+ * 非 /api 路径不走这条中间件（静态资源由平台处理）。
+ * 未登录返回 401 {success:false, error:'未登录'}。
+ * 注意：email() 不走 HTTP，不受影响；邮箱归属 token（X-Mailbox-Token）是另一套机制，不动。
+ */
+app.use('/api/*', async (c, next) => {
+  const path = c.req.path;
+  if (path === '/api/config' || path.startsWith('/api/auth/')) {
+    await next();
+    return;
+  }
+  const token = getAdminTokenHeader(c);
+  if (!token || !(await verifySession(c.env.DB, token))) {
+    return c.json({ success: false, error: '未登录' }, 401);
+  }
+  await next();
+  return;
+});
+
+// ---- 管理员认证接口 ----
+
+// 认证状态：是否需要初始化密码、当前请求是否已登录
+app.get('/api/auth/status', async (c) => {
+  try {
+    const setupRequired = !(await isAdminPasswordSet(c.env.DB));
+    let authenticated = false;
+    const token = getAdminTokenHeader(c);
+    if (token) {
+      authenticated = await verifySession(c.env.DB, token);
+    }
+    return c.json({ success: true, setupRequired, authenticated });
+  } catch (error) {
+    console.error('获取认证状态失败:', error);
+    return c.json({ success: false, error: '服务器内部错误' }, 500);
+  }
+});
+
+// 首次设置管理员密码（仅当尚未设置时可用），成功后直接创建会话并返回 token
+app.post('/api/auth/setup', async (c) => {
+  try {
+    const setupRequired = !(await isAdminPasswordSet(c.env.DB));
+    if (!setupRequired) {
+      return c.json({ success: false, error: '管理员密码已设置' }, 400);
+    }
+
+    let body: { password?: unknown; confirmPassword?: unknown };
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ success: false, error: '无效的请求体' }, 400);
+    }
+    const { password, confirmPassword } = body;
+    if (typeof password !== 'string' || password.length < MIN_ADMIN_PASSWORD_LENGTH) {
+      return c.json({ success: false, error: '密码至少 6 位' }, 400);
+    }
+    if (password !== confirmPassword) {
+      return c.json({ success: false, error: '两次输入的密码不一致' }, 400);
+    }
+
+    await setAdminPasswordHash(c.env.DB, await hashPassword(password));
+    const token = await createSession(c.env.DB);
+    return c.json({ success: true, token });
+  } catch (error) {
+    console.error('设置管理员密码失败:', error);
+    return c.json({ success: false, error: '服务器内部错误' }, 500);
+  }
+});
+
+// 管理员登录
+app.post('/api/auth/login', async (c) => {
+  try {
+    const storedHash = await getAdminPasswordHash(c.env.DB);
+    if (!storedHash) {
+      return c.json({ success: false, error: '管理员密码未设置' }, 400);
+    }
+
+    let body: { password?: unknown };
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ success: false, error: '无效的请求体' }, 400);
+    }
+    const { password } = body;
+    if (typeof password !== 'string' || password.length === 0) {
+      return c.json({ success: false, error: '密码不能为空' }, 400);
+    }
+    if (!(await verifyPassword(password, storedHash))) {
+      return c.json({ success: false, error: '密码错误' }, 401);
+    }
+
+    const token = await createSession(c.env.DB);
+    return c.json({ success: true, token });
+  } catch (error) {
+    console.error('管理员登录失败:', error);
+    return c.json({ success: false, error: '服务器内部错误' }, 500);
+  }
+});
+
+// 管理员登出：需有效会话，删除该会话
+app.post('/api/auth/logout', async (c) => {
+  try {
+    const token = getAdminTokenHeader(c);
+    if (!token || !(await verifySession(c.env.DB, token))) {
+      return c.json({ success: false, error: '未登录' }, 401);
+    }
+    await deleteSession(c.env.DB, token);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('管理员登出失败:', error);
+    return c.json({ success: false, error: '服务器内部错误' }, 500);
+  }
+});
+
+// 修改管理员密码：需有效会话；改完删除全部会话（前端需重新登录）
+app.post('/api/auth/change', async (c) => {
+  try {
+    const token = getAdminTokenHeader(c);
+    if (!token || !(await verifySession(c.env.DB, token))) {
+      return c.json({ success: false, error: '未登录' }, 401);
+    }
+
+    const storedHash = await getAdminPasswordHash(c.env.DB);
+    if (!storedHash) {
+      return c.json({ success: false, error: '管理员密码未设置' }, 400);
+    }
+
+    let body: { oldPassword?: unknown; newPassword?: unknown };
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ success: false, error: '无效的请求体' }, 400);
+    }
+    const { oldPassword, newPassword } = body;
+    if (typeof oldPassword !== 'string' || !(await verifyPassword(oldPassword, storedHash))) {
+      return c.json({ success: false, error: '旧密码错误' }, 401);
+    }
+    if (typeof newPassword !== 'string' || newPassword.length < MIN_ADMIN_PASSWORD_LENGTH) {
+      return c.json({ success: false, error: '新密码至少 6 位' }, 400);
+    }
+
+    await setAdminPasswordHash(c.env.DB, await hashPassword(newPassword));
+    await deleteAllSessions(c.env.DB);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('修改管理员密码失败:', error);
+    return c.json({ success: false, error: '服务器内部错误' }, 500);
+  }
+});
 
 // 运行时配置：前端启动时读取收信域名等配置。
 // EMAIL_DOMAIN 在控制台 Worker → 设置 → 变量里设置，改完即生效，无需重新构建。

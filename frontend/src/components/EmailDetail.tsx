@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { API_BASE_URL } from '../config';
-import { getMailboxTokenHeaders } from '../utils/api';
+import { apiFetch, getMailboxTokenHeaders } from '../utils/api';
 import { MailboxContext } from '../contexts/MailboxContext';
 
 interface EmailDetailProps {
@@ -60,7 +60,7 @@ const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: stri
 
     (async () => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_BASE_URL}/api/attachments/${attachment.id}?download=true`,
           { headers: getMailboxTokenHeaders(mailboxAddress) },
         );
@@ -154,7 +154,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
         }
         
         setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
+        const response = await apiFetch(`${API_BASE_URL}/api/emails/${emailId}`, {
           headers: getMailboxTokenHeaders(mailboxAddress),
         });
         
@@ -203,7 +203,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const fetchAttachments = async (emailId: string, emailData?: Email) => {
     try {
       setIsLoadingAttachments(true);
-      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/attachments`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/emails/${emailId}/attachments`, {
         headers: getMailboxTokenHeaders(mailboxAddress),
       });
       
@@ -241,7 +241,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       setErrorMessage(null);
       setSuccessMessage(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/emails/${emailId}`, {
         method: 'DELETE',
         headers: getMailboxTokenHeaders(mailboxAddress),
       });
@@ -280,7 +280,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   // 下载附件：用带 token 的 fetch 取内容再触发下载（直接拼 URL 的 <a> 无法带请求头）
   const handleDownloadAttachment = async (attachment: Attachment) => {
     try {
-      const response = await fetch(getAttachmentUrl(attachment.id, true), {
+      const response = await apiFetch(getAttachmentUrl(attachment.id, true), {
         headers: getMailboxTokenHeaders(mailboxAddress),
       });
       if (!response.ok) throw new Error('Failed to download attachment');
@@ -361,7 +361,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const sanitizedHtmlContent = email?.htmlContent ? DOMPurify.sanitize(email.htmlContent) : '';
   
   return (
-    <div className="border rounded-lg p-6">
+    <div className="glass rounded-lg p-6">
       {/* 错误和成功提示 */}
       {(errorMessage || successMessage) && (
         <div className={`p-3 mb-4 rounded-md ${errorMessage ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
@@ -390,7 +390,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             <div className="flex space-x-2">
               <button
                 onClick={onClose}
-                className="p-2 rounded-md hover:bg-muted"
+                className="p-2 rounded-md hover:bg-white/60 dark:hover:bg-white/15"
                 title={t('common.close')}
               >
                 <i className="fas fa-times"></i>
@@ -413,11 +413,11 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             <h3 className="font-medium mb-2">{t('email.content')}</h3>
             {email.htmlContent ? (
               <div 
-                className="prose max-w-none border rounded-md p-4 bg-white"
+                className="prose max-w-none glass-soft rounded-md p-4"
                 dangerouslySetInnerHTML={{ __html: sanitizedHtmlContent }}
               />
             ) : email.textContent ? (
-              <pre className="whitespace-pre-wrap border rounded-md p-4 bg-white font-sans">
+              <pre className="whitespace-pre-wrap glass-soft rounded-md p-4 font-sans">
                 {email.textContent}
               </pre>
             ) : (
@@ -440,7 +440,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
               {attachments.length > 0 ? (
                 <div className="space-y-3">
                   {attachments.map(attachment => (
-                    <div key={attachment.id} className="border rounded-md p-3 bg-white">
+                    <div key={attachment.id} className="glass-soft rounded-md p-3">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
                           <i className={`fas ${getFileIcon(attachment.mimeType)} text-primary text-lg`}></i>

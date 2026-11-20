@@ -214,7 +214,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
     const displayUsername = username.length > 10 ? `${username.substring(0, 8)}...` : username;
 
     return (
-      <code className="bg-muted px-2 py-1 rounded text-xs font-medium truncate max-w-[120px]">
+      <code className="bg-white/60 dark:bg-white/10 px-2 py-1 rounded text-xs font-medium truncate max-w-[120px]">
         {domainPart ? `${displayUsername}@${domainPart}` : displayUsername}
       </code>
     );
@@ -223,7 +223,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
   // 按钮基础样式
   const buttonBaseClass = "flex items-center justify-center rounded-md transition-all duration-200";
   const copyButtonClass = `${buttonBaseClass} hover:bg-primary/20 hover:text-primary hover:scale-110 mx-1`;
-  const refreshButtonClass = `${buttonBaseClass} bg-muted hover:bg-primary/20 hover:text-primary hover:scale-110 mr-1`;
+  const refreshButtonClass = `${buttonBaseClass} glass-btn hover:bg-primary/20 hover:text-primary hover:scale-110 mr-1`;
   const customizeButtonClass = `${buttonBaseClass} bg-primary text-primary-foreground hover:bg-primary/80 hover:scale-110`;
   
   return (
@@ -240,7 +240,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                   if (customAddressError) setCustomAddressError(null);
                   if (customAddressSuccess) setCustomAddressSuccess(null);
                 }}
-                className={`w-32 md:w-40 px-2 py-1 text-sm border rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary ${
+                className={`glass-input w-32 md:w-40 px-2 py-1 text-sm rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary ${
                   customAddressError ? 'border-red-500' : ''
                 }`}
                 placeholder={t('mailbox.customAddressPlaceholder')}
@@ -248,7 +248,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
                 autoFocus
               />
               {domain !== '' && (
-                <span className="px-2 py-1 text-sm border-y border-r rounded-r-md bg-muted">
+                <span className="px-2 py-1 text-sm border-y border-r rounded-r-md bg-white/50 dark:bg-white/10">
                   @{domain}
                 </span>
               )}
@@ -256,7 +256,7 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
             <button
               type="button"
               onClick={handleCancelCustom}
-              className="px-2 py-1 text-sm rounded-md bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+              className="px-2 py-1 text-sm rounded-md glass-btn text-muted-foreground transition-colors"
               disabled={isActionLoading}
             >
               {t('common.cancel')}
