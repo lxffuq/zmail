@@ -114,20 +114,31 @@ const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: stri
 // 验证码关键词：中文、英文、OTP 等
 const VERIFICATION_CODE_KEYWORDS = /验证码|驗證碼|verification\s*code|otp|动态码|動態碼|校验码|确认码|確認碼|安全码|auth(?:entication)?\s*code/i;
 
-// 关键词附近的 4-8 位数字，如“您的验证码是 123456”或“123456 是您的验证码”
+// 关键词附近的数字（3 位以上，长度不限，如“您的验证码是 1234567890”）；
+// 跳过“5 分钟内有效”这种时间数量，避免把 5 认成验证码。
 function matchCodeNearKeyword(text: string): string | null {
   const keyword = `(?:${VERIFICATION_CODE_KEYWORDS.source})`;
-  const after = new RegExp(`${keyword}[^0-9]{0,20}([0-9]{4,8})(?![0-9])`, 'i');
-  const m1 = text.match(after);
-  if (m1) return m1[1];
-  const before = new RegExp(`(?:^|[^0-9])([0-9]{4,8})[^0-9]{0,20}${keyword}`, 'i');
-  const m2 = text.match(before);
-  return m2 ? m2[1] : null;
+  const afterPattern = new RegExp(`${keyword}[^0-9]{0,30}([0-9]{3,})(?![0-9])`, 'gi');
+  for (const m of text.matchAll(afterPattern)) {
+    if (!isTimeAmount(text, m, m[1])) return m[1];
+  }
+  const beforePattern = new RegExp(`(?:^|[^0-9])([0-9]{3,})(?![0-9])[^0-9]{0,30}${keyword}`, 'gi');
+  for (const m of text.matchAll(beforePattern)) {
+    if (!isTimeAmount(text, m, m[1])) return m[1];
+  }
+  return null;
 }
 
-// 兜底：正文里第一个独立的 4-8 位数字，排除年份和日期/时间片段
+// 数字后面紧跟时间单位（如“5 分钟内有效”里的 5）不是验证码
+function isTimeAmount(text: string, m: RegExpMatchArray, code: string): boolean {
+  const start = (m.index ?? 0) + m[0].indexOf(code);
+  const rest = text.slice(start + code.length, start + code.length + 8).trimStart();
+  return /^(分钟|秒|小时|天|minutes?|seconds?|hours?|days?)\b/i.test(rest);
+}
+
+// 兜底：正文里第一个独立的数字（3-16 位），排除年份和日期/时间片段
 function matchFallbackCode(text: string): string | null {
-  for (const m of text.matchAll(/(?:^|[^0-9])([0-9]{4,8})(?![0-9])/g)) {
+  for (const m of text.matchAll(/(?:^|[^0-9])([0-9]{3,16})(?![0-9])/g)) {
     const code = m[1];
     const start = (m.index ?? 0) + m[0].indexOf(code);
     const next = text[start + code.length];
@@ -139,7 +150,7 @@ function matchFallbackCode(text: string): string | null {
 }
 
 // 从邮件里提取验证码：正文优先用纯文本，没有再从 HTML 去标签；
-// 先找关键词附近的，再找主题里的，最后兜底找正文第一个独立数字。
+// 先找关键词附近的（长度不限），再找主题里的，最后兜底找正文第一个独立数字。
 function extractVerificationCode(email: Email): string | null {
   const bodyText = (email.textContent || '').trim()
     || (email.htmlContent || '')
