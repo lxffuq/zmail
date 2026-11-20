@@ -38,14 +38,16 @@ const EmailList: React.FC<EmailListProps> = ({
     setAutoRefresh(!autoRefresh);
   };
 
-  if (isLoading) {
+  // 只有首次加载（列表还是空的）才显示加载提示；刷新时列表已有内容，
+  // 就在后台静默刷新，列表原地不动，不再用转圈替换整个卡片（会闪一下）。
+  if (isLoading && emails.length === 0) {
     return (
       <div className="glass rounded-3xl p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="section-title text-base sm:text-lg">{t('email.inbox')}</h2>
         </div>
         <div className="flex justify-center items-center py-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-sm text-white/60">{t('common.loading')}</p>
         </div>
       </div>
     );
