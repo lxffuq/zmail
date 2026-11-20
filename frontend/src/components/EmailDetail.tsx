@@ -112,7 +112,7 @@ const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: stri
 };
 
 // 验证码关键词：中文、英文、OTP 等
-const VERIFICATION_CODE_KEYWORDS = /验证码|驗證碼|verification\s*code|otp|动态码|動態碼|校验码|确认码|確認碼|安全码|auth(?:entication)?\s*code/i;
+const VERIFICATION_CODE_KEYWORDS = /验证码|驗證碼|verification\s*code|confirmation\s*code|confirm\s*code|otp|动态码|動態碼|校验码|确认码|確認碼|安全码|login\s*code|sign[- ]in\s*code|auth(?:entication)?\s*code|is your\s+(?:\w+\s+){0,2}code|is the\s+(?:\w+\s+){0,2}code/i;
 
 // 关键词附近的数字（3 位以上，长度不限，如“您的验证码是 1234567890”）；
 // 跳过“5 分钟内有效”这种时间数量，避免把 5 认成验证码。
@@ -149,15 +149,24 @@ function matchFallbackCode(text: string): string | null {
   return null;
 }
 
+// HTML 转纯文本：先删 <style>/<script>/注释块（里面的像素值、尺寸数字
+// 不是正文内容，之前就因为 max-width: 480px 把 480 误认成验证码），再去标签。
+function stripHtml(html: string): string {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style\s*>/gi, ' ')
+    .replace(/<script[^>]*>[\s\S]*?<\/script\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // 从邮件里提取验证码：正文优先用纯文本，没有再从 HTML 去标签；
 // 先找关键词附近的（长度不限），再找主题里的，最后兜底找正文第一个独立数字。
 function extractVerificationCode(email: Email): string | null {
   const bodyText = (email.textContent || '').trim()
-    || (email.htmlContent || '')
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/&nbsp;/gi, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    || (email.htmlContent ? stripHtml(email.htmlContent) : '');
   if (!bodyText && !email.subject) return null;
   return (
     (bodyText ? matchCodeNearKeyword(bodyText) : null)
