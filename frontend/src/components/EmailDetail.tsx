@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import { API_BASE_URL } from '../config';
 import { apiFetch, getMailboxTokenHeaders } from '../utils/api';
 import { MailboxContext } from '../contexts/MailboxContext';
+import { useTopToast, TopToast } from './TopToast';
 
 interface EmailDetailProps {
   emailId: string;
@@ -110,6 +111,50 @@ const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: stri
   );
 };
 
+// 验证码关键词：中文、英文、OTP 等
+const VERIFICATION_CODE_KEYWORDS = /验证码|驗證碼|verification\s*code|otp|动态码|動態碼|校验码|确认码|確認碼|安全码|auth(?:entication)?\s*code/i;
+
+// 关键词附近的 4-8 位数字，如“您的验证码是 123456”或“123456 是您的验证码”
+function matchCodeNearKeyword(text: string): string | null {
+  const keyword = `(?:${VERIFICATION_CODE_KEYWORDS.source})`;
+  const after = new RegExp(`${keyword}[^0-9]{0,20}([0-9]{4,8})(?![0-9])`, 'i');
+  const m1 = text.match(after);
+  if (m1) return m1[1];
+  const before = new RegExp(`(?:^|[^0-9])([0-9]{4,8})[^0-9]{0,20}${keyword}`, 'i');
+  const m2 = text.match(before);
+  return m2 ? m2[1] : null;
+}
+
+// 兜底：正文里第一个独立的 4-8 位数字，排除年份和日期/时间片段
+function matchFallbackCode(text: string): string | null {
+  for (const m of text.matchAll(/(?:^|[^0-9])([0-9]{4,8})(?![0-9])/g)) {
+    const code = m[1];
+    const start = (m.index ?? 0) + m[0].indexOf(code);
+    const next = text[start + code.length];
+    if (next === '-' || next === '/' || next === ':') continue;
+    if (/^(19|20)\d{2}$/.test(code)) continue;
+    return code;
+  }
+  return null;
+}
+
+// 从邮件里提取验证码：正文优先用纯文本，没有再从 HTML 去标签；
+// 先找关键词附近的，再找主题里的，最后兜底找正文第一个独立数字。
+function extractVerificationCode(email: Email): string | null {
+  const bodyText = (email.textContent || '').trim()
+    || (email.htmlContent || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  if (!bodyText && !email.subject) return null;
+  return (
+    (bodyText ? matchCodeNearKeyword(bodyText) : null)
+    ?? (email.subject ? matchCodeNearKeyword(email.subject) : null)
+    ?? (bodyText ? matchFallbackCode(bodyText) : null)
+  );
+}
+
 const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const { t } = useTranslation();
   const { mailbox, emailCache, addToEmailCache, handleMailboxNotFound } = useContext(MailboxContext);
@@ -119,6 +164,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { toast, showToast } = useTopToast();
   const errorTimeoutRef = useRef<number | null>(null);
   const successTimeoutRef = useRef<number | null>(null);
 
@@ -360,9 +406,21 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
 
   // 邮件 HTML 先经 DOMPurify 净化再渲染（默认配置即可挡掉 script/事件处理器/javascript: 链接）
   const sanitizedHtmlContent = email?.htmlContent ? DOMPurify.sanitize(email.htmlContent) : '';
+
+  // 邮件里的验证码（没有则不显示卡片）
+  const verificationCode = email ? extractVerificationCode(email) : null;
+
+  // 一键复制验证码，提示走屏幕上方中间的悬浮 toast
+  const copyVerificationCode = () => {
+    if (!verificationCode) return;
+    navigator.clipboard.writeText(verificationCode)
+      .then(() => showToast(t('email.codeCopied'), 'success'))
+      .catch(() => showToast(t('email.copyCodeFailed'), 'error'));
+  };
   
   return (
     <div className="glass-soft rounded-2xl p-5 sm:p-6">
+      <TopToast toast={toast} />
       {/* 错误和成功提示 */}
       {(errorMessage || successMessage) && (
         <div className={`p-3 mb-4 rounded-xl border text-sm ${errorMessage ? 'bg-red-500/15 border-red-400/30 text-red-300' : 'bg-green-500/15 border-green-400/30 text-green-300'}`}>
@@ -415,6 +473,26 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             </div>
           </div>
           
+          {/* 验证码：一键复制 */}
+          {verificationCode && (
+            <div className="glass rounded-2xl px-4 py-3.5 flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-slate-400 mb-1">{t('email.verificationCode')}</p>
+                <p className="text-2xl font-bold tracking-[0.25em] text-slate-50 font-mono break-all">
+                  {verificationCode}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={copyVerificationCode}
+                className="btn-gradient flex-none px-4 py-2.5 min-h-[40px] rounded-full text-sm flex items-center gap-2"
+              >
+                <i className="fas fa-copy text-xs"></i>
+                {t('email.copyCode')}
+              </button>
+            </div>
+          )}
+
           {/* 分隔线 */}
           <hr className="border-white/10" />
           
