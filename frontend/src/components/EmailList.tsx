@@ -38,16 +38,14 @@ const EmailList: React.FC<EmailListProps> = ({
     setAutoRefresh(!autoRefresh);
   };
 
-  // 刷新时不再用转圈动画替换整个列表：已有邮件时列表原地不动，后台静默更新；
-  // 只有首次加载（还没有任何邮件）才显示一行静态的“加载中...”，不转圈。
-  if (isLoading && emails.length === 0) {
+  if (isLoading) {
     return (
       <div className="glass rounded-3xl p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="section-title text-base sm:text-lg">{t('email.inbox')}</h2>
         </div>
         <div className="flex justify-center items-center py-10">
-          <span className="text-sm text-slate-400">{t('common.loading')}</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     );
