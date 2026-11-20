@@ -59,71 +59,17 @@
 
 ## 🚀 快速部署
 
-ZMAIL 由前端和后端两部分组成，需要分别部署：
+只需要一个 Cloudflare 账号（免费）、一个域名、一台装了 Node.js 18+ 的电脑，全程约 5 分钟：
 
-### 🖥️ 前端部署步骤
+```bash
+git clone https://github.com/lxffuq/zmail.git
+cd zmail
+./deploy.sh
+```
 
-<div align="center">
-  <h3>1️⃣ 部署前端到 Cloudflare Pages</h3>
-  <a href="https://dash.cloudflare.com/?to=/:account/pages/new/import-git" target="_blank">
-    <img src="https://img.shields.io/badge/部署前端到_Cloudflare_Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Deploy Frontend to Cloudflare Pages" width="300" />
-  </a>
-</div>
+脚本会自动完成：创建 D1 数据库 → 部署后端 Worker → 构建并部署前端到 Pages。部署完按脚本最后的提示，在 Cloudflare 控制台把 Email Routing 接到 Worker 上就能收信。
 
-<div style="background-color: #2d2d2d; color: #ffffff; padding: 15px; border-radius: 5px; margin: 15px 0;">
-  <ol>
-    <li>点击"部署前端到 Cloudflare Pages"按钮</li>
-    <li>连接您的GitHub账户并选择导入此仓库</li>
-    <li>设置构建配置:
-      <ul>
-        <li>构建命令: <code>yarn build</code></li>
-        <li>构建输出目录: <code>dist</code></li>
-        <li>根目录（高级）-> 路径: <code>frontend</code></li>
-      </ul>
-    </li>
-    <li>配置环境变量:
-      <ul>
-        <li><code>VITE_API_BASE_URL</code>: 您的Worker API基础URL (例如: <code>https://api.mdzz.uk</code>)</li>
-         <li><code>VITE_EMAIL_DOMAIN</code>: 您的域名 (例如: <code>mdzz.uk</code>)</li>
-      </ul>
-    </li>
-    <li>点击"保存并部署"</li>
-  </ol>
-</div>
-
-### ⚙️ 后端部署步骤
-
-<div align="center">
-  <h3>2️⃣ 部署后端到 Cloudflare Workers</h3>
-  <a href="https://dash.cloudflare.com/?to=/:account/workers/new" target="_blank">
-    <img src="https://img.shields.io/badge/部署后端到_Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Deploy Backend to Cloudflare Workers" width="300" />
-  </a>
-</div>
-
-<div style="background-color: #2d2d2d; color: #ffffff; padding: 15px; border-radius: 5px; margin: 15px 0;">
-  <ol>
-    <li>点击"部署后端到 Cloudflare Workers"按钮</li>
-    <li>连接您的GitHub账户并选择导入此仓库</li>
-    <li>设置构建配置:
-      <ul>
-        <li>部署命令: <code>yarn deploy</code></li>
-        <li>高级设置 -> 根目录: <code>/worker</code></li>
-      </ul>
-    </li>
-    <li>配置D1数据库:
-      <ul>
-        <li>创建一个D1数据库 (例如: <code>mail_db</code>)</li>
-        <li>将其绑定到您的Worker (绑定名称: <code>DB</code>)</li>
-      </ul>
-    </li>
-    <li>配置Email路由:
-      <ul>
-        <li>在Cloudflare控制面板中设置Email路由，将邮件转发到您的Worker</li>
-      </ul>
-    </li>
-    <li>点击"部署"</li>
-  </ol>
-</div>
+> 📖 完整教程（含准备工作、接通收信的每一步点击、常见问题）见 **[DEPLOY.md](./DEPLOY.md)**。
 
 ---
 

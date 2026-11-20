@@ -10,7 +10,9 @@ compatibility_date = "2025-03-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "tempmail"
-database_id = "987e6b1a-946a-4cba-84fc-23c4c31d72d6"  # 需要替换为您的实际数据库 ID
+# database_id 由一键部署脚本 ./deploy.sh 自动填入；
+# 手动部署时，先运行 npx wrangler d1 create tempmail，再把得到的 ID 填到这里。
+database_id = "REPLACE_WITH_YOUR_D1_ID"
 
 # 配置邮件处理
 [triggers]
