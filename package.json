@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "ZMAIL - 24-hour anonymous email service on Cloudflare Workers",
   "scripts": {
-    "build": "npm --prefix frontend install --no-audit --no-fund && npm --prefix frontend run build",
+    "build": "npm --prefix worker install --no-audit --no-fund && npm --prefix frontend install --no-audit --no-fund && npm --prefix frontend run build",
     "deploy": "npx -y wrangler deploy"
   }
 }
