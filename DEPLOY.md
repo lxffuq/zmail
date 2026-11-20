@@ -38,6 +38,8 @@ cd zmail
 
 ### 1. 设置收信域名
 
+点 Deploy to Cloudflare 按钮部署时，控制台会弹出 `EMAIL_DOMAIN` 让你填写，填了域名，创建的邮箱才会显示完整地址；如果当时留空、或用别的方式部署，部署后再到这里补：
+
 控制台 → Workers & Pages → `zmail` → 设置 → 变量，添加变量：
 
 - 变量名：`EMAIL_DOMAIN`
@@ -69,7 +71,7 @@ cd zmail
 - 本地脚本的：改完代码后，在仓库根目录再跑一次 `./deploy.sh`。
 - 手动：`npm run build && npm run deploy`（先构建前端，再部署）。
 
-重新部署会保留控制台里设置的变量（`keep_vars = true`），`EMAIL_DOMAIN` 不会丢。
+重新部署会保留控制台里设置的变量（`keep_vars = true`），但 `EMAIL_DOMAIN` 写在 `wrangler.toml` 里，从仓库重新部署时会按文件里的值来——如果部署后发现邮箱又只显示前缀，去 Worker 设置 → 变量里重新填好你的域名。
 
 ## 常见问题
 

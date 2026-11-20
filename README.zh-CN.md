@@ -117,10 +117,10 @@ cd zmail
 
 | 配置 | 在哪 | 说明 |
 |---|---|---|
-| `EMAIL_DOMAIN` | Worker → 设置 → 变量 | 收信域名，例如 `example.com`。不设的话创建的邮箱只显示一串字符、没有 `@域名` 后缀 |
+| `EMAIL_DOMAIN` | `wrangler.toml` 的 `[vars]` / Worker → 设置 → 变量 | 收信域名，例如 `example.com`。点按钮部署时控制台会让你填；不填的话创建的邮箱只显示一串字符、没有 `@域名` 后缀 |
 | D1 数据库 | `wrangler.toml` 的 `[[d1_databases]]` | 绑定名 `DB`，库名 `tempmail`。表结构首次请求时自动创建，不用手动建表 |
 | 定时清理 | `wrangler.toml` 的 `[triggers]` | 每小时整点（`0 * * * *`）清理过期邮箱和邮件 |
-| `keep_vars = true` | `wrangler.toml` | 重新部署时保留控制台里手动设置的变量，`EMAIL_DOMAIN` 不会丢 |
+| `keep_vars = true` | `wrangler.toml` | 重新部署时保留控制台里手动设置的变量；但 `EMAIL_DOMAIN` 写在配置文件里，从仓库重新部署时会按文件里的值来，丢了就去变量里重新填 |
 | 自定义域名 | Worker → 设置 → 域 | 给 Worker 绑自己的域名后直接用新域名打开；如果 `workers.dev` 在你的网络下打不开，绑域名就能解决 |
 
 ---

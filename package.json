@@ -6,5 +6,12 @@
   "scripts": {
     "build": "npm --prefix worker install --no-audit --no-fund && npm --prefix frontend install --no-audit --no-fund && npm --prefix frontend run build",
     "deploy": "npx -y wrangler deploy"
+  },
+  "cloudflare": {
+    "bindings": {
+      "EMAIL_DOMAIN": {
+        "description": "收信域名，例如 example.com。必须是已在 Cloudflare 托管、并配好 Email Routing 的域名；填了才会显示完整邮箱地址，留空则只显示前缀。部署后也可在控制台 Worker → 设置 → 变量里修改。"
+      }
+    }
   }
 }

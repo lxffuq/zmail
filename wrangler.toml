@@ -8,9 +8,14 @@ compatibility_flags = ["nodejs_compat"]
 # 不会被配置文件覆盖或删除。
 keep_vars = true
 
-# 收信域名不在这里写死：在控制台 Worker → 设置 → 变量里添加 EMAIL_DOMAIN，
-# 前端启动时通过 /api/config 读取，改完即生效，无需重新构建。
-# 也可以用 npx wrangler deploy --var EMAIL_DOMAIN:example.com 的方式设置。
+# 收信域名：点 Deploy to Cloudflare 按钮部署时，控制台会弹出这个变量让部署的人填写，
+# 填了域名，创建的邮箱才会显示完整地址（xxx@你的域名）；留空则只显示前缀。
+# 部署后也可以在控制台 Worker → 设置 → 变量里改。
+# 注意：因为这个变量写在这里，从仓库重新部署时会按这里的值来；
+# 如果发现邮箱又只显示前缀，去 Worker 设置 → 变量里重新填好域名再部署一次。
+# 平时用 wrangler 部署请带 --var EMAIL_DOMAIN:你的域名，避免被这里的空值覆盖。
+[vars]
+EMAIL_DOMAIN = ""
 
 # D1 数据库：这里不写数据库 ID。部署时 Wrangler 4.45+ 会按名字自动处理：
 # 账号里已有同名库就直接复用，没有就新建一个并把数据库 ID 写回 wrangler.toml。
