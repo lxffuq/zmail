@@ -43,18 +43,22 @@ const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => setShowChangePassword(true)}
-              className="glass-chip px-2.5 sm:px-3 py-2 min-h-[36px] text-sm rounded-full"
+              className="glass-chip h-10 w-10 sm:w-auto sm:px-3 rounded-full flex items-center justify-center gap-1.5 text-sm whitespace-nowrap"
               title="修改密码"
+              aria-label="修改密码"
             >
-              修改密码
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="15.5" r="5.5" /><path d="m21 2-9.6 9.6" /><path d="m15.5 7.5 3 3L22 7l-3-3" /></svg>
+              <span className="hidden sm:inline">修改密码</span>
             </button>
             <button
               type="button"
               onClick={onLogout}
-              className="btn-danger-glass px-2.5 sm:px-3 py-2 min-h-[36px] text-sm rounded-full"
+              className="btn-danger-glass h-10 w-10 sm:w-auto sm:px-3 rounded-full flex items-center justify-center gap-1.5 text-sm whitespace-nowrap"
               title="退出登录"
+              aria-label="退出登录"
             >
-              退出
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+              <span className="hidden sm:inline">退出</span>
             </button>
             <LanguageSwitcher />
             <a
