@@ -270,13 +270,29 @@
   /* 邮件正文（经 DOMPurify 净化后的 HTML）：深色底上的可读配色 */
   .email-html {
     color: #e2e8f0;
+    /* 长地址/链接/令牌不断行会撑出容器 */
+    overflow-wrap: break-word;
   }
   .email-html a {
     color: #93c5fd;
+    overflow-wrap: break-word;
   }
   .email-html img {
-    max-width: 100%;
-    height: auto;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  /* 邮件里常见的定宽表格（如 430px/600px）在手机上会超出容器被裁掉：
+     限制最大宽度，单元格内容允许换行 */
+  .email-html table {
+    max-width: 100% !important;
+  }
+  .email-html td,
+  .email-html th {
+    overflow-wrap: break-word;
+  }
+  .email-html pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
   }
 
   /* 键盘可达性：按钮/链接获得焦点时给一道柔和的 indigo 光圈 */

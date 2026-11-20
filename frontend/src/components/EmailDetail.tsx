@@ -520,8 +520,8 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
           <div>
             <h3 className="text-sm font-semibold text-slate-300 mb-2.5">{t('email.content')}</h3>
             {email.htmlContent ? (
-              <div 
-                className="email-html max-w-none glass-soft rounded-xl p-4 sm:p-5"
+              <div
+                className="email-html max-w-none glass-soft rounded-xl p-4 sm:p-5 overflow-x-auto"
                 dangerouslySetInnerHTML={{ __html: sanitizedHtmlContent }}
               />
             ) : email.textContent ? (
