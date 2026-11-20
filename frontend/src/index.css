@@ -72,9 +72,9 @@
     /* 深蓝黑底 + 蓝紫环境光晕（左上蓝、右上紫、下方青），固定不动 */
     background-color: #05070f;
     background-image:
-      radial-gradient(720px 420px at 12% -4%, rgba(59, 130, 246, 0.28), transparent 65%),
-      radial-gradient(720px 460px at 88% -6%, rgba(139, 92, 246, 0.24), transparent 65%),
-      radial-gradient(900px 520px at 50% 115%, rgba(34, 211, 238, 0.12), transparent 65%),
+      radial-gradient(720px 420px at 12% -4%, rgba(59, 130, 246, 0.34), transparent 65%),
+      radial-gradient(720px 460px at 88% -6%, rgba(139, 92, 246, 0.3), transparent 65%),
+      radial-gradient(900px 520px at 50% 115%, rgba(34, 211, 238, 0.14), transparent 65%),
       linear-gradient(180deg, #070b18 0%, #05070f 55%, #04060d 100%);
     background-attachment: fixed;
     min-height: 100vh;
@@ -99,44 +99,56 @@
   }
 }
 
-/* ---- 深色液态玻璃 ---- */
-/* 半透明深色底 + 毛玻璃模糊 + 细亮边框 + 顶部内高光。
+/* ---- 深色液态玻璃（按图配色：深蓝黑底 + 蓝紫渐变）----
+   玻璃本体用双层背景：padding-box 层是带蓝紫色晕的渐变底，
+   border-box 层是蓝→白→紫的渐变边框（左上亮蓝、右下亮紫），
+   再加顶部内高光和淡淡的蓝紫外光晕，做出液态的通透和流动感。
    -webkit-backdrop-filter 让手机 Safari 也生效；不用 overflow:hidden，
    避免裁掉组件内的绝对定位提示（如复制成功气泡）。 */
 @layer components {
   .glass {
-    background: rgba(17, 24, 46, 0.55);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.16) 0%, rgba(17, 24, 46, 0.58) 42%, rgba(139, 92, 246, 0.15) 100%) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.6) 0%, rgba(255, 255, 255, 0.16) 32%, rgba(255, 255, 255, 0.08) 60%, rgba(216, 180, 254, 0.55) 100%) border-box;
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    backdrop-filter: blur(22px) saturate(170%);
+    border: 1px solid transparent;
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      0 12px 40px rgba(0, 0, 0, 0.45),
+      0 0 32px rgba(99, 102, 241, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
   }
 
   /* 更透的玻璃：卡片内的小块、邮件正文、附件条、统计格 */
   .glass-soft {
-    background: rgba(255, 255, 255, 0.06);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    backdrop-filter: blur(16px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0.05) 45%, rgba(139, 92, 246, 0.09) 100%) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.4) 0%, rgba(255, 255, 255, 0.12) 35%, rgba(216, 180, 254, 0.35) 100%) border-box;
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid transparent;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.03);
   }
 
   /* 顶部栏：模糊更强，贴着顶部 */
   .glass-header {
-    background: rgba(10, 15, 32, 0.6);
-    -webkit-backdrop-filter: blur(24px) saturate(170%);
-    backdrop-filter: blur(24px) saturate(170%);
-    border: 1px solid rgba(255, 255, 255, 0.13);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(10, 15, 32, 0.62) 45%, rgba(139, 92, 246, 0.13) 100%) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.5) 0%, rgba(255, 255, 255, 0.14) 35%, rgba(216, 180, 254, 0.45) 100%) border-box;
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    backdrop-filter: blur(26px) saturate(180%);
+    border: 1px solid transparent;
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
   /* 玻璃输入框：深色半透明底 + 内阴影，白字 */
   .glass-input {
-    background: rgba(255, 255, 255, 0.07);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(255, 255, 255, 0.06) 50%, rgba(139, 92, 246, 0.07));
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -152,20 +164,24 @@
     border-color: rgba(99, 102, 241, 0.6);
   }
 
-  /* 玻璃次按钮：深色半透明小胶囊 */
+  /* 玻璃次按钮：深色半透明小胶囊，带蓝紫渐变边框和顶部高光 */
   .glass-btn {
-    background: rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(255, 255, 255, 0.07) 50%, rgba(139, 92, 246, 0.1)) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.45), rgba(255, 255, 255, 0.12) 40%, rgba(216, 180, 254, 0.4)) border-box;
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     backdrop-filter: blur(12px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid transparent;
     box-shadow:
       0 2px 12px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
     color: #e2e8f0;
     transition: background-color 0.2s ease, transform 0.15s ease, color 0.2s ease, box-shadow 0.2s ease;
   }
   .glass-btn:hover {
-    background: rgba(255, 255, 255, 0.13);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(255, 255, 255, 0.12) 50%, rgba(139, 92, 246, 0.18)) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.55), rgba(255, 255, 255, 0.16) 40%, rgba(216, 180, 254, 0.5)) border-box;
   }
   .glass-btn:active {
     transform: scale(0.97);
@@ -173,31 +189,38 @@
 
   /* 小玻璃胶囊按钮：复制 / 刷新 / 新建等小操作 */
   .glass-chip {
-    background: rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(255, 255, 255, 0.07) 50%, rgba(139, 92, 246, 0.1)) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.45), rgba(255, 255, 255, 0.12) 40%, rgba(216, 180, 254, 0.4)) border-box;
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     backdrop-filter: blur(12px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid transparent;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     color: #e2e8f0;
     transition: background-color 0.2s ease, transform 0.15s ease, color 0.2s ease, box-shadow 0.2s ease;
   }
   .glass-chip:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background:
+      linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(255, 255, 255, 0.13) 50%, rgba(139, 92, 246, 0.2)) padding-box,
+      linear-gradient(135deg, rgba(147, 197, 253, 0.55), rgba(255, 255, 255, 0.16) 40%, rgba(216, 180, 254, 0.5)) border-box;
     color: #fff;
   }
   .glass-chip:active {
     transform: scale(0.96);
   }
 
-  /* 主按钮：蓝 → 紫渐变胶囊，带光晕（参考图“保存全部”） */
+  /* 主按钮：蓝 → 紫渐变胶囊，顶部加一层白色光泽，带蓝紫光晕 */
   .btn-gradient {
-    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 48%, #8b5cf6 100%);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.06) 38%, rgba(255, 255, 255, 0) 55%),
+      linear-gradient(135deg, #3b82f6 0%, #6366f1 48%, #8b5cf6 100%);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow:
-      0 8px 24px rgba(99, 102, 241, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      0 8px 24px rgba(99, 102, 241, 0.5),
+      0 0 20px rgba(139, 92, 246, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
     color: #fff;
     transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
@@ -205,7 +228,8 @@
     filter: brightness(1.12);
     box-shadow:
       0 10px 28px rgba(99, 102, 241, 0.55),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      0 0 28px rgba(139, 92, 246, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
   .btn-gradient:active {
     transform: scale(0.98);
