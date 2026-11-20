@@ -30,4 +30,7 @@ export async function initRuntimeConfig(): Promise<void> {
 
 // 其他配置
 export const DEFAULT_AUTO_REFRESH = true;
-export const AUTO_REFRESH_INTERVAL = 10000; // 10秒
+export const AUTO_REFRESH_INTERVAL = 30000; // 30秒
+
+// 邮箱有效期（小时）：创建随机/自定义邮箱的默认有效期
+export const MAILBOX_TTL_HOURS = 24;

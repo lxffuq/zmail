@@ -1,3 +1,6 @@
+// 邮箱有效期（小时）
+export const MAILBOX_TTL_HOURS = 24;
+
 /**
  * 生成随机字符串
  * @param length 字符串长度
@@ -5,9 +8,11 @@
  */
 export function generateRandomString(length: number): string {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const randomValues = new Uint32Array(length);
+    crypto.getRandomValues(randomValues);
     let result = '';
     for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+      result += chars.charAt(randomValues[i] % chars.length);
     }
     return result;
   }
@@ -18,7 +23,9 @@ export function generateRandomString(length: number): string {
    */
   export function generateRandomAddress(): string {
     // 生成8-12位随机字符
-    const length = Math.floor(Math.random() * 5) + 8;
+    const randomValues = new Uint32Array(1);
+    crypto.getRandomValues(randomValues);
+    const length = (randomValues[0] % 5) + 8;
     return generateRandomString(length);
   }
   
@@ -65,102 +72,4 @@ export function generateRandomString(length: number): string {
    */
   export function extractMailboxName(address: string): string {
     return address.split('@')[0];
-  }
-  
-  /**
-   * 格式化日期时间
-   * @param timestamp 时间戳（秒）
-   * @returns 格式化的日期时间字符串
-   */
-  export function formatDateTime(timestamp: number): string {
-    const date = new Date(timestamp * 1000);
-    return date.toISOString();
-  }
-
-  /**
-   * 发送邮件
-   * @param fromAddress 发件人地址
-   * @param toAddress 收件人地址
-   * @param toName 收件人名称
-   * @param subject 邮件主题
-   * @param textContent 纯文本内容
-   * @param htmlContent HTML内容
-   * @returns 发送结果
-   */
-  export async function sendEmail(
-    fromAddress: string,
-    toAddress: string,
-    toName: string = '',
-    subject: string,
-    textContent: string = '',
-    htmlContent: string = ''
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
-    try {
-      // 导入buildMimeEmail函数
-      const { buildMimeEmail } = await import('./email-builder');
-      
-      // 构建MIME格式邮件
-      const rawEmail = buildMimeEmail(
-        fromAddress,
-        toAddress,
-        toName,
-        subject,
-        textContent,
-        htmlContent
-      );
-      
-      // 使用MailChannels API发送邮件
-      const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          personalizations: [
-            {
-              to: [{ email: toAddress, name: toName || undefined }],
-            },
-          ],
-          from: {
-            email: fromAddress,
-            name: extractMailboxName(fromAddress),
-          },
-          subject: subject,
-          content: [
-            {
-              type: 'text/plain',
-              value: textContent,
-            },
-            ...(htmlContent
-              ? [
-                  {
-                    type: 'text/html',
-                    value: htmlContent,
-                  },
-                ]
-              : []),
-          ],
-          headers: {
-            'X-Generated-By': 'TempMail-System',
-            'X-Mime-Version': '1.0',
-          },
-          raw_mime: btoa(rawEmail),
-        }),
-      });
-
-      if (response.ok) {
-        return { success: true, message: '邮件发送成功' };
-      } else {
-        const errorData = await response.json() as { errors?: string[] };
-        return {
-          success: false,
-          error: `邮件发送失败: ${errorData.errors?.[0] || response.statusText}`,
-        };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: `邮件发送失败: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
   }

@@ -15,6 +15,8 @@ export interface Mailbox {
   expiresAt: number;
   ipAddress: string;
   lastAccessed: number;
+  // 邮箱归属 token，仅在创建接口返回；按地址/邮件查询时不返回
+  accessToken?: string;
 }
 
 // 创建邮箱参数
@@ -106,14 +108,6 @@ export interface SaveAttachmentParams {
   size: number;
 }
 
-// API 响应类型
-export interface ApiResponse<T> {
-  success: boolean;
-  error?: string;
-  message?: string;
-  [key: string]: any;
-}
-
 // 解析后的邮件类型
 export interface ParsedEmail {
   html?: string;
@@ -133,14 +127,4 @@ export interface ParsedEmail {
     content: ArrayBuffer;
     size?: number;
   }>;
-}
-
-// 发送邮件参数
-export interface SendEmailParams {
-  fromAddress: string;  // 发件人地址（临时邮箱地址）
-  toAddress: string;    // 收件人地址
-  toName?: string;      // 收件人名称
-  subject: string;      // 邮件主题
-  textContent?: string; // 纯文本内容
-  htmlContent?: string; // HTML内容
 }

@@ -1,6 +1,6 @@
-import { Hono } from 'hono';
+import { Hono, Context } from 'hono';
 import { cors } from 'hono/cors';
-import { Env, SendEmailParams, ParsedEmail } from './types';
+import { Env } from './types';
 import { 
   createMailbox, 
   getMailbox, 
@@ -9,10 +9,12 @@ import {
   getEmail, 
   deleteEmail,
   getAttachments,
-  getAttachment
+  getAttachment,
+  getMailboxAccessToken,
+  getMailboxIdForEmail,
+  getMailboxIdForAttachment
 } from './database';
-import { generateRandomAddress, isValidEmailAddress, sendEmail } from './utils';
-import { parseRawEmail } from './email-builder';
+import { generateRandomAddress, MAILBOX_TTL_HOURS } from './utils';
 
 // 创建 Hono 应用
 const app = new Hono<{ Bindings: Env }>();
@@ -21,14 +23,26 @@ const app = new Hono<{ Bindings: Env }>();
 app.use('/*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type'],
+  allowHeaders: ['Content-Type', 'X-Mailbox-Token'],
   maxAge: 86400,
 }));
 
-// 健康检查端点
-app.get('/', (c) => {
-  return c.json({ status: 'ok', message: '临时邮箱系统API正常运行' });
-});
+// 自定义地址格式：3-32 位小写字母/数字/._-
+const CUSTOM_ADDRESS_PATTERN = /^[a-z0-9._-]{3,32}$/;
+
+/**
+ * 校验邮箱归属 token。
+ * mailbox.access_token 为 NULL（旧邮箱）时放行；有值时请求头 X-Mailbox-Token 必须等于它。
+ * @returns 校验不通过时返回 403 响应，通过返回 null
+ */
+async function checkMailboxToken(c: Context<{ Bindings: Env }>, mailboxId: string): Promise<Response | null> {
+  const token = await getMailboxAccessToken(c.env.DB, mailboxId);
+  if (token === null) return null;
+  if (c.req.header('X-Mailbox-Token') !== token) {
+    return c.json({ success: false, error: '无权访问该邮箱' }, 403);
+  }
+  return null;
+}
 
 // 运行时配置：前端启动时读取收信域名等配置。
 // EMAIL_DOMAIN 在控制台 Worker → 设置 → 变量里设置，改完即生效，无需重新构建。
@@ -37,124 +51,6 @@ app.get('/api/config', (c) => {
     success: true,
     emailDomain: c.env.EMAIL_DOMAIN || '',
   });
-});
-
-// 发送邮件API，暂时不用
-app.post('/api/send-email', async (c) => {
-  try {
-    const body = await c.req.json() as SendEmailParams;
-    
-    // 验证必要参数
-    if (!body.fromAddress || typeof body.fromAddress !== 'string') {
-      return c.json({ success: false, error: '发件人地址不能为空' }, 400);
-    }
-    
-    if (!body.toAddress || typeof body.toAddress !== 'string') {
-      return c.json({ success: false, error: '收件人地址不能为空' }, 400);
-    }
-    
-    if (!isValidEmailAddress(body.toAddress)) {
-      return c.json({ success: false, error: '收件人邮箱地址格式无效' }, 400);
-    }
-    
-    if (!body.subject || typeof body.subject !== 'string') {
-      return c.json({ success: false, error: '邮件主题不能为空' }, 400);
-    }
-    
-    if (!body.textContent && !body.htmlContent) {
-      return c.json({ success: false, error: '邮件内容不能为空' }, 400);
-    }
-    
-    // // 查找发件人邮箱是否存在
-    // const mailbox = await getMailbox(c.env.DB, body.fromAddress);
-    
-    // if (!mailbox) {
-    //   return c.json({ success: false, error: '发件人邮箱不存在' }, 404);
-    // }
-    
-    // 发送邮件
-    const result = await sendEmail(
-      body.fromAddress,
-      body.toAddress,
-      body.toName || '',
-      body.subject,
-      body.textContent || '',
-      body.htmlContent || ''
-    );
-    
-    if (result.success) {
-      return c.json({ 
-        success: true, 
-        message: '邮件发送成功'
-      });
-    } else {
-      return c.json({ 
-        success: false, 
-        error: result.error || '邮件发送失败'
-      }, 500);
-    }
-  } catch (error) {
-    console.error('发送邮件失败:', error);
-    return c.json({ 
-      success: false, 
-      error: '发送邮件失败',
-      message: error instanceof Error ? error.message : String(error)
-    }, 500);
-  }
-});
-
-// 接收原始邮件并解析，用于测试解析邮件功能
-app.post('/api/parse-email', async (c) => {
-  try {
-    console.log('接收到解析邮件请求');
-    
-    // 获取请求体中的原始邮件内容
-    const body = await c.req.text();
-    
-    if (!body) {
-      console.log('未提供邮件内容');
-      return c.json({ success: false, error: '未提供邮件内容' }, 400);
-    }
-    
-    console.log(`接收到邮件内容，长度: ${body.length} 字节`);
-    
-    // 将文本内容转换为ArrayBuffer
-    const encoder = new TextEncoder();
-    const rawEmail = encoder.encode(body).buffer;
-    
-    // 使用PostalMime解析邮件
-    const parsedEmail = await parseRawEmail(rawEmail) as ParsedEmail;
-    
-    console.log('邮件解析成功:', {
-      subject: parsedEmail.subject,
-      from: parsedEmail.from,
-      to: parsedEmail.to?.length || 0,
-      hasText: !!parsedEmail.text,
-      hasHtml: !!parsedEmail.html,
-      attachments: parsedEmail.attachments?.length || 0
-    });
-    
-    // 返回解析结果
-    return c.json({ 
-      success: true, 
-      email: {
-        subject: parsedEmail.subject,
-        from: parsedEmail.from,
-        to: parsedEmail.to,
-        text: parsedEmail.text,
-        html: parsedEmail.html,
-        hasAttachments: !!parsedEmail.attachments?.length,
-        attachmentsCount: parsedEmail.attachments?.length || 0
-      }
-    });
-  } catch (error) {
-    console.error('解析邮件失败:', error);
-    return c.json({ 
-      success: false, 
-      error: '解析邮件失败',
-      message: error instanceof Error ? error.message : String(error)
-    }, 500);
-  }
 });
 
 // 创建邮箱
@@ -166,8 +62,13 @@ app.post('/api/mailboxes', async (c) => {
     if (body.address && typeof body.address !== 'string') {
       return c.json({ success: false, error: '无效的邮箱地址' }, 400);
     }
+
+    // 自定义地址必须符合格式
+    if (body.address && !CUSTOM_ADDRESS_PATTERN.test(body.address)) {
+      return c.json({ success: false, error: '无效的邮箱地址' }, 400);
+    }
     
-    const expiresInHours = 24; // 固定24小时有效期
+    const expiresInHours = MAILBOX_TTL_HOURS;
     
     // 获取客户端IP
     const ip = c.req.header('CF-Connecting-IP') || 'unknown';
@@ -191,11 +92,14 @@ app.post('/api/mailboxes', async (c) => {
     return c.json({ success: true, mailbox });
   } catch (error) {
     console.error('创建邮箱失败:', error);
+    // 并发创建同一地址时触发唯一约束
+    if (error instanceof Error && (error.message.includes('UNIQUE') || error.message.includes('SQLITE_CONSTRAINT'))) {
+      return c.json({ success: false, error: '邮箱地址已存在' }, 400);
+    }
     return c.json({ 
       success: false, 
-      error: '创建邮箱失败',
-      message: error instanceof Error ? error.message : String(error)
-    }, 400);
+      error: '创建邮箱失败'
+    }, 500);
   }
 });
 
@@ -208,14 +112,16 @@ app.get('/api/mailboxes/:address', async (c) => {
     if (!mailbox) {
       return c.json({ success: false, error: '邮箱不存在' }, 404);
     }
+
+    const forbidden = await checkMailboxToken(c, mailbox.id);
+    if (forbidden) return forbidden;
     
     return c.json({ success: true, mailbox });
   } catch (error) {
     console.error('获取邮箱失败:', error);
     return c.json({ 
       success: false, 
-      error: '获取邮箱失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
 });
@@ -224,6 +130,15 @@ app.get('/api/mailboxes/:address', async (c) => {
 app.delete('/api/mailboxes/:address', async (c) => {
   try {
     const address = c.req.param('address');
+    const mailbox = await getMailbox(c.env.DB, address);
+
+    if (!mailbox) {
+      return c.json({ success: false, error: '邮箱不存在' }, 404);
+    }
+
+    const forbidden = await checkMailboxToken(c, mailbox.id);
+    if (forbidden) return forbidden;
+
     await deleteMailbox(c.env.DB, address);
     
     return c.json({ success: true });
@@ -231,8 +146,7 @@ app.delete('/api/mailboxes/:address', async (c) => {
     console.error('删除邮箱失败:', error);
     return c.json({ 
       success: false, 
-      error: '删除邮箱失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
 });
@@ -246,6 +160,9 @@ app.get('/api/mailboxes/:address/emails', async (c) => {
     if (!mailbox) {
       return c.json({ success: false, error: '邮箱不存在' }, 404);
     }
+
+    const forbidden = await checkMailboxToken(c, mailbox.id);
+    if (forbidden) return forbidden;
     
     const emails = await getEmails(c.env.DB, mailbox.id);
     
@@ -254,8 +171,7 @@ app.get('/api/mailboxes/:address/emails', async (c) => {
     console.error('获取邮件列表失败:', error);
     return c.json({ 
       success: false, 
-      error: '获取邮件列表失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
 });
@@ -264,6 +180,16 @@ app.get('/api/mailboxes/:address/emails', async (c) => {
 app.get('/api/emails/:id', async (c) => {
   try {
     const id = c.req.param('id');
+
+    // 先查所属邮箱做 token 校验（不触发已读标记）
+    const mailboxId = await getMailboxIdForEmail(c.env.DB, id);
+    if (!mailboxId) {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+
+    const forbidden = await checkMailboxToken(c, mailboxId);
+    if (forbidden) return forbidden;
+
     const email = await getEmail(c.env.DB, id);
     
     if (!email) {
@@ -275,8 +201,7 @@ app.get('/api/emails/:id', async (c) => {
     console.error('获取邮件详情失败:', error);
     return c.json({ 
       success: false, 
-      error: '获取邮件详情失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
 });
@@ -286,12 +211,15 @@ app.get('/api/emails/:id/attachments', async (c) => {
   try {
     const id = c.req.param('id');
     
-    // 检查邮件是否存在
-    const email = await getEmail(c.env.DB, id);
-    if (!email) {
+    // 先查所属邮箱做 token 校验（不触发已读标记）
+    const mailboxId = await getMailboxIdForEmail(c.env.DB, id);
+    if (!mailboxId) {
       return c.json({ success: false, error: '邮件不存在' }, 404);
     }
-    
+
+    const forbidden = await checkMailboxToken(c, mailboxId);
+    if (forbidden) return forbidden;
+
     // 获取附件列表
     const attachments = await getAttachments(c.env.DB, id);
     
@@ -300,8 +228,7 @@ app.get('/api/emails/:id/attachments', async (c) => {
     console.error('获取附件列表失败:', error);
     return c.json({ 
       success: false, 
-      error: '获取附件列表失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
 });
@@ -310,6 +237,16 @@ app.get('/api/emails/:id/attachments', async (c) => {
 app.get('/api/attachments/:id', async (c) => {
   try {
     const id = c.req.param('id');
+
+    // 先查所属邮箱做 token 校验
+    const mailboxId = await getMailboxIdForAttachment(c.env.DB, id);
+    if (!mailboxId) {
+      return c.json({ success: false, error: '附件不存在' }, 404);
+    }
+
+    const forbidden = await checkMailboxToken(c, mailboxId);
+    if (forbidden) return forbidden;
+
     const attachment = await getAttachment(c.env.DB, id);
     
     if (!attachment) {
@@ -321,15 +258,13 @@ app.get('/api/attachments/:id', async (c) => {
     
     if (download) {
       // 将Base64内容转换为二进制
-      const binaryContent = atob(attachment.content);
-      const bytes = new Uint8Array(binaryContent.length);
-      for (let i = 0; i < binaryContent.length; i++) {
-        bytes[i] = binaryContent.charCodeAt(i);
-      }
+      const bytes = Uint8Array.from(atob(attachment.content), (ch) => ch.charCodeAt(0));
       
       // 设置响应头
       c.header('Content-Type', attachment.mimeType);
       c.header('Content-Disposition', `attachment; filename="${encodeURIComponent(attachment.filename)}"`);
+      c.header('X-Content-Type-Options', 'nosniff');
+      c.header('Content-Security-Policy', 'sandbox');
       
       return c.body(bytes);
     }
@@ -352,8 +287,7 @@ app.get('/api/attachments/:id', async (c) => {
     console.error('获取附件详情失败:', error);
     return c.json({ 
       success: false, 
-      error: '获取附件详情失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
 });
@@ -362,6 +296,16 @@ app.get('/api/attachments/:id', async (c) => {
 app.delete('/api/emails/:id', async (c) => {
   try {
     const id = c.req.param('id');
+
+    // 先查所属邮箱做 token 校验
+    const mailboxId = await getMailboxIdForEmail(c.env.DB, id);
+    if (!mailboxId) {
+      return c.json({ success: false, error: '邮件不存在' }, 404);
+    }
+
+    const forbidden = await checkMailboxToken(c, mailboxId);
+    if (forbidden) return forbidden;
+
     await deleteEmail(c.env.DB, id);
     
     return c.json({ success: true });
@@ -369,19 +313,9 @@ app.delete('/api/emails/:id', async (c) => {
     console.error('删除邮件失败:', error);
     return c.json({ 
       success: false, 
-      error: '删除邮件失败',
-      message: error instanceof Error ? error.message : String(error)
+      error: '服务器内部错误'
     }, 500);
   }
-});
-
-// 调试端点
-app.get('/api/debug/db', (c) => {
-  return c.json({
-    dbDefined: !!c.env.DB,
-    dbType: typeof c.env.DB,
-    dbMethods: c.env.DB ? Object.keys(c.env.DB) : []
-  });
 });
 
 export default app;

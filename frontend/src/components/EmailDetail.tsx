@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { API_BASE_URL } from '../config';
+import { getMailboxTokenHeaders } from '../utils/api';
 import { MailboxContext } from '../contexts/MailboxContext';
 
 interface EmailDetailProps {
@@ -19,9 +21,98 @@ interface Attachment {
   chunksCount: number;
 }
 
+// 邮件详情缓存 TTL：1 小时，过期视为未命中
+const EMAIL_CACHE_TTL_MS = 60 * 60 * 1000;
+
+// 附件预览白名单：只允许 PDF 和常见图片类型进 iframe/图片预览，
+// 其他类型只提供下载入口，不预览。SVG 不在白名单内（可能内嵌脚本）。
+const PREVIEWABLE_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/bmp',
+  'image/avif',
+]);
+
+const normalizeMimeType = (mimeType: string): string =>
+  mimeType.split(';')[0].trim().toLowerCase();
+
+const isPreviewableAttachment = (mimeType: string): boolean => {
+  const normalized = normalizeMimeType(mimeType);
+  return normalized === 'application/pdf' || PREVIEWABLE_IMAGE_MIME_TYPES.has(normalized);
+};
+
+// 附件预览：先用带 token 的 fetch 取内容转成 blob URL 再渲染，
+// 这样请求头 X-Mailbox-Token 才能带上（<img>/<iframe> 的 src 无法带请求头）。
+// PDF 的 iframe 加 sandbox=""，禁止其中脚本执行。
+const AttachmentPreview: React.FC<{ attachment: Attachment; mailboxAddress: string }> = ({
+  attachment,
+  mailboxAddress,
+}) => {
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isPreviewableAttachment(attachment.mimeType)) return;
+
+    let cancelled = false;
+    let url: string | null = null;
+
+    (async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/attachments/${attachment.id}?download=true`,
+          { headers: getMailboxTokenHeaders(mailboxAddress) },
+        );
+        if (!response.ok) return;
+        const blob = await response.blob();
+        url = URL.createObjectURL(blob);
+        if (!cancelled) {
+          setObjectUrl(url);
+        } else {
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        console.error('Error fetching attachment preview:', error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [attachment.id, attachment.mimeType, mailboxAddress]);
+
+  if (!isPreviewableAttachment(attachment.mimeType)) return null;
+  if (!objectUrl) return null;
+
+  if (normalizeMimeType(attachment.mimeType) === 'application/pdf') {
+    return (
+      <div className="mt-2">
+        <iframe
+          src={objectUrl}
+          sandbox=""
+          className="w-full h-[400px] border rounded"
+          title={attachment.filename}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 max-w-full overflow-hidden">
+      <img
+        src={objectUrl}
+        alt={attachment.filename}
+        className="max-w-full max-h-[300px] object-contain rounded border"
+      />
+    </div>
+  );
+};
+
 const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const { t } = useTranslation();
-  const { emailCache, addToEmailCache, handleMailboxNotFound } = useContext(MailboxContext);
+  const { mailbox, emailCache, addToEmailCache, handleMailboxNotFound } = useContext(MailboxContext);
   const [email, setEmail] = useState<Email | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +121,9 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const errorTimeoutRef = useRef<number | null>(null);
   const successTimeoutRef = useRef<number | null>(null);
+
+  // 当前邮箱地址（用于取该邮箱的 token）
+  const mailboxAddress = mailbox?.address ?? '';
   
   // 清除提示的定时器
   useEffect(() => {
@@ -50,16 +144,19 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
         setErrorMessage(null);
         setSuccessMessage(null);
         
-        // 首先检查缓存中是否有该邮件
-        if (emailCache[emailId]) {
-          setEmail(emailCache[emailId].email);
-          setAttachments(emailCache[emailId].attachments);
+        // 首先检查缓存中是否有该邮件（超过 1 小时视为过期，不返回）
+        const cached = emailCache[emailId];
+        if (cached && Date.now() - cached.timestamp <= EMAIL_CACHE_TTL_MS) {
+          setEmail(cached.email);
+          setAttachments(cached.attachments);
           setIsLoading(false);
           return;
         }
         
         setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`);
+        const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
+          headers: getMailboxTokenHeaders(mailboxAddress),
+        });
         
         if (!response.ok) {
           // 如果邮箱不存在（404），则清除本地缓存并创建新邮箱
@@ -101,12 +198,14 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     };
     
     fetchEmail();
-  }, [emailId, t, emailCache, addToEmailCache, handleMailboxNotFound, onClose]);
+  }, [emailId, t, emailCache, addToEmailCache, handleMailboxNotFound, onClose, mailboxAddress]);
   
   const fetchAttachments = async (emailId: string, emailData?: Email) => {
     try {
       setIsLoadingAttachments(true);
-      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/attachments`);
+      const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}/attachments`, {
+        headers: getMailboxTokenHeaders(mailboxAddress),
+      });
       
       if (!response.ok) {
         // 如果邮箱不存在（404），则清除本地缓存并创建新邮箱
@@ -144,6 +243,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       
       const response = await fetch(`${API_BASE_URL}/api/emails/${emailId}`, {
         method: 'DELETE',
+        headers: getMailboxTokenHeaders(mailboxAddress),
       });
       
       if (!response.ok) {
@@ -176,6 +276,29 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
       }, 3000);
     }
   };
+
+  // 下载附件：用带 token 的 fetch 取内容再触发下载（直接拼 URL 的 <a> 无法带请求头）
+  const handleDownloadAttachment = async (attachment: Attachment) => {
+    try {
+      const response = await fetch(getAttachmentUrl(attachment.id, true), {
+        headers: getMailboxTokenHeaders(mailboxAddress),
+      });
+      if (!response.ok) throw new Error('Failed to download attachment');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = attachment.filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error('Error downloading attachment:', error);
+      // 兜底：无 token 的旧邮箱可直接用链接下载
+      window.open(getAttachmentUrl(attachment.id, true), '_blank', 'noopener,noreferrer');
+    }
+  };
   
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -200,7 +323,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
   
-  // 判断文件类型
+  // 判断文件类型（仅用于图标）
   const getFileType = (mimeType: string): string => {
     if (mimeType.startsWith('image/')) return 'image';
     if (mimeType.startsWith('video/')) return 'video';
@@ -228,60 +351,14 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
     return `${API_BASE_URL}/api/attachments/${attachmentId}${download ? '?download=true' : ''}`;
   };
   
-  // 渲染附件预览
+  // 渲染附件预览：只有白名单类型（PDF、常见图片）才预览，其他类型只提供下载入口
   const renderAttachmentPreview = (attachment: Attachment) => {
-    const fileType = getFileType(attachment.mimeType);
-    const attachmentUrl = getAttachmentUrl(attachment.id, true);
-    
-    switch (fileType) {
-      case 'image':
-        return (
-          <div className="mt-2 max-w-full overflow-hidden">
-            <img 
-              src={attachmentUrl} 
-              alt={attachment.filename} 
-              className="max-w-full max-h-[300px] object-contain rounded border"
-            />
-          </div>
-        );
-      case 'video':
-        return (
-          <div className="mt-2">
-            <video 
-              src={attachmentUrl} 
-              controls 
-              className="max-w-full max-h-[300px] rounded border"
-            >
-              {t('email.videoNotSupported')}
-            </video>
-          </div>
-        );
-      case 'audio':
-        return (
-          <div className="mt-2">
-            <audio 
-              src={attachmentUrl} 
-              controls 
-              className="w-full"
-            >
-              {t('email.audioNotSupported')}
-            </audio>
-          </div>
-        );
-      case 'pdf':
-        return (
-          <div className="mt-2">
-            <iframe 
-              src={attachmentUrl} 
-              className="w-full h-[400px] border rounded"
-              title={attachment.filename}
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
+    if (!isPreviewableAttachment(attachment.mimeType)) return null;
+    return <AttachmentPreview attachment={attachment} mailboxAddress={mailboxAddress} />;
   };
+
+  // 邮件 HTML 先经 DOMPurify 净化再渲染（默认配置即可挡掉 script/事件处理器/javascript: 链接）
+  const sanitizedHtmlContent = email?.htmlContent ? DOMPurify.sanitize(email.htmlContent) : '';
   
   return (
     <div className="border rounded-lg p-6">
@@ -337,7 +414,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
             {email.htmlContent ? (
               <div 
                 className="prose max-w-none border rounded-md p-4 bg-white"
-                dangerouslySetInnerHTML={{ __html: email.htmlContent }}
+                dangerouslySetInnerHTML={{ __html: sanitizedHtmlContent }}
               />
             ) : email.textContent ? (
               <pre className="whitespace-pre-wrap border rounded-md p-4 bg-white font-sans">
@@ -372,18 +449,16 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
                             <p className="text-xs text-muted-foreground">{formatFileSize(attachment.size)}</p>
                           </div>
                         </div>
-                        <a 
-                          href={getAttachmentUrl(attachment.id, true)}
-                          download={attachment.filename}
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadAttachment(attachment)}
                           className="px-3 py-1 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90"
-                          target="_blank"
-                          rel="noopener noreferrer"
                         >
                           {t('email.download')}
-                        </a>
+                        </button>
                       </div>
                       
-                      {/* 附件预览 */}
+                      {/* 附件预览（仅白名单类型） */}
                       {renderAttachmentPreview(attachment)}
                     </div>
                   ))}
@@ -407,4 +482,4 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ emailId, onClose }) => {
   );
 };
 
-export default EmailDetail; 
+export default EmailDetail;

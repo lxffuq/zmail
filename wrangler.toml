@@ -12,11 +12,12 @@ keep_vars = true
 # 前端启动时通过 /api/config 读取，改完即生效，无需重新构建。
 # 也可以用 npx wrangler deploy --var EMAIL_DOMAIN:example.com 的方式设置。
 
-# D1 数据库：不填 database_id，部署时自动创建同名数据库（自动预配）。
-# 首次部署后 Wrangler 会把 database_id 写回本文件，提交它，以后部署都复用同一个库。
+# D1 数据库：部署工具（Wrangler 3）要求填 database_id；库已由用户在控制台建好，
+# ID 写在这里，部署时直接绑定，不再自动创建。
 [[d1_databases]]
 binding = "DB"
 database_name = "tempmail"
+database_id = "1001f567-5353-4f6d-a746-4f6441679860"
 
 # 每小时清理过期邮箱和邮件
 [triggers]

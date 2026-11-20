@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createRandomMailbox, createCustomMailbox } from '../utils/api';
+import { createRandomMailbox, createCustomMailbox, deleteMailbox as deleteMailboxApi, removeMailboxToken } from '../utils/api';
+import { CUSTOM_ADDRESS_PATTERN } from './CreateMailboxForm';
 
 interface HeaderMailboxProps {
   mailbox: Mailbox | null;
@@ -87,12 +88,23 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
       });
   };
   
-  // 更换随机邮箱
+  // 更换随机邮箱：先调后端删除旧邮箱，再创建新邮箱
   const handleRefreshMailbox = async () => {
     // 清除之前的错误信息
     setRefreshError(null);
     
     setIsActionLoading(true);
+    const oldAddress = mailbox.address;
+    try {
+      const deleteResult = await deleteMailboxApi(oldAddress);
+      if (!deleteResult.success) {
+        console.error('Failed to delete old mailbox on server:', oldAddress, deleteResult.error);
+      }
+    } catch (error) {
+      console.error('Failed to delete old mailbox on server:', oldAddress, error);
+    }
+    // 切换邮箱时删掉旧地址的 token（后端失败也清本地）
+    removeMailboxToken(oldAddress);
     const result = await createRandomMailbox();
     setIsActionLoading(false);
     
@@ -135,12 +147,29 @@ const HeaderMailbox: React.FC<HeaderMailboxProps> = ({
       setCustomAddressError(t('mailbox.invalidAddress'));
       return;
     }
+
+    // 提交前校验格式，不通过不发请求
+    if (!CUSTOM_ADDRESS_PATTERN.test(customAddress.trim())) {
+      setCustomAddressError('自定义地址格式不正确：仅支持小写字母、数字、点、下划线和连字符，长度 3-32 个字符');
+      return;
+    }
     
     setIsActionLoading(true);
+    const oldAddress = mailbox.address;
     const result = await createCustomMailbox(customAddress);
     setIsActionLoading(false);
     
     if (result.success && result.mailbox) {
+      // 创建成功后再删旧邮箱（避免地址已存在等 400 时丢了旧邮箱），并清旧地址 token
+      try {
+        const deleteResult = await deleteMailboxApi(oldAddress);
+        if (!deleteResult.success) {
+          console.error('Failed to delete old mailbox on server:', oldAddress, deleteResult.error);
+        }
+      } catch (error) {
+        console.error('Failed to delete old mailbox on server:', oldAddress, error);
+      }
+      removeMailboxToken(oldAddress);
       onMailboxChange(result.mailbox);
       
       // 显示成功消息在表单下方

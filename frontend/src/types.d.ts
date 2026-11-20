@@ -12,6 +12,8 @@ interface Mailbox {
   expiresAt: number;
   lastAccessed: number;
   ipAddress?: string;
+  // 创建时后端只返回一次的访问令牌（其他接口不返回）
+  accessToken?: string;
 }
 
 interface Email {

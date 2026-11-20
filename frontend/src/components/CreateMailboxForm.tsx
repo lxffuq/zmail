@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MAILBOX_TTL_HOURS } from '../config';
+import { saveMailboxToken } from '../utils/api';
+
+// 自定义地址格式：3-32 个字符，仅小写字母、数字、点、下划线、连字符（与后端一致）
+export const CUSTOM_ADDRESS_PATTERN = /^[a-z0-9._-]{3,32}$/;
+const CUSTOM_ADDRESS_ERROR = '自定义地址格式不正确：仅支持小写字母、数字、点、下划线和连字符，长度 3-32 个字符';
 
 interface CreateMailboxFormProps {
   onMailboxCreated: (address: string) => void;
@@ -9,7 +15,7 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
   const { t } = useTranslation();
   const [isCustom, setIsCustom] = useState(false);
   const [customAddress, setCustomAddress] = useState('');
-  const expiresInHours = 24;
+  const expiresInHours = MAILBOX_TTL_HOURS;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -51,6 +57,10 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
       
       const data = await response.json();
       if (data.success) {
+        // 创建时后端只返回一次 accessToken，存入 zmail_tokens
+        if (data.mailbox?.address && data.mailbox.accessToken) {
+          saveMailboxToken(data.mailbox.address, data.mailbox.accessToken);
+        }
         setSuccessMessage(t('mailbox.createSuccess'));
         
         // 2秒后调用回调函数
@@ -97,6 +107,20 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
       }, 3000);
       return;
     }
+
+    // 提交前校验格式，不通过不发请求
+    if (!CUSTOM_ADDRESS_PATTERN.test(customAddress.trim())) {
+      setErrorMessage(CUSTOM_ADDRESS_ERROR);
+
+      // 3秒后清除错误信息
+      if (errorTimeoutRef.current) {
+        window.clearTimeout(errorTimeoutRef.current);
+      }
+      errorTimeoutRef.current = window.setTimeout(() => {
+        setErrorMessage(null);
+      }, 3000);
+      return;
+    }
     
     try {
       setIsLoading(true);
@@ -129,6 +153,10 @@ const CreateMailboxForm: React.FC<CreateMailboxFormProps> = ({ onMailboxCreated 
       
       const data = await response.json();
       if (data.success) {
+        // 创建时后端只返回一次 accessToken，存入 zmail_tokens
+        if (data.mailbox?.address && data.mailbox.accessToken) {
+          saveMailboxToken(data.mailbox.address, data.mailbox.accessToken);
+        }
         setSuccessMessage(t('mailbox.createSuccess'));
         
         // 2秒后调用回调函数
